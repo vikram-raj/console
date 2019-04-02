@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Button } from '@patternfly/react-core';
 
 const HomePage: React.SFC = () => {
   return (
@@ -9,6 +10,9 @@ const HomePage: React.SFC = () => {
         for instructions on how to enable the devconsole.
       </p>
       <p>Developer console is an alpha feature.</p>
+      <Button component="a" href="/devops/import" variant="primary">
+        Import from Git
+      </Button>
     </div>
   );
 };

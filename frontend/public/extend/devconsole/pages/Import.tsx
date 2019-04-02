@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { ImportFlow } from './../components/import/import-flow';
 
 const ImportPage: React.SFC = () => (
-  <h1>This is Import App Flow Component.</h1>
+  <ImportFlow />
 );
 
 export default ImportPage;
