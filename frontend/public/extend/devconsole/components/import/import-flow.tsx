@@ -1,8 +1,6 @@
 // import * as _ from 'lodash-es';
 import * as React from 'react';
-import { ImportFlowCatalog } from './import-flow-catalog';
-import { Button } from '@patternfly/react-core'
-import { builderImages } from './mock.data';
+import { Button } from '@patternfly/react-core';
 
 export class ImportFlow extends React.Component<any, any> {
   constructor(props) {
@@ -22,6 +20,10 @@ export class ImportFlow extends React.Component<any, any> {
       <div className="modal-body-content">
         <div className="modal-body-inner-shadow-covers">
           <div className="form-group">
+            <p>Git</p>
+            <span>Some help text about this section. Lorem Ipsum</span>
+            <label>Git Type</label>
+
             <label htmlFor="name">Name </label>
             <input
               className="form-control"
@@ -47,7 +49,6 @@ export class ImportFlow extends React.Component<any, any> {
           <div className="form-group">
             <h1 className="catalog-item-header-pf-title">Select builder image to use</h1>
           </div>
-          <ImportFlowCatalog sourceImages={builderImages} />
         </div>
       </div>
     )
