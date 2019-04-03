@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { ModelessOverlay, Modal } from 'patternfly-react';
 import { ImportFlow } from './../import/import-flow';
+import { CatalogListPage } from './../../../../../public/components/catalog/catalog-page';
+import { CatalogTileViewPage } from './../../../../../public/components/catalog/catalog-items';
 
 export class PreviewImport extends React.Component<any, any> {
   constructor(props) {
