@@ -319,7 +319,7 @@ class NamespaceBarDropdowns_ extends React.Component {
 
     return <div className="co-namespace-bar__dropdowns">
       <PreviewImport
-        isOpen={this.state.isOpen} />
+        isOpen={this.state.isOpen} closeModal={this.importOverlay} />
       <Dropdown
         className="co-namespace-selector"
         menuClassName="co-namespace-selector__menu"
