@@ -10,7 +10,7 @@ const HomePage: React.SFC = () => {
         for instructions on how to enable the devconsole.
       </p>
       <p>Developer console is an alpha feature.</p>
-      <Button component="a" href="/devops/import" variant="primary">
+      <Button component="a" href="/dev/import" variant="primary">
         Import from Git
       </Button>
     </div>
