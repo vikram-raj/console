@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet';
 import { PageSection, PageSectionVariants } from '@patternfly/react-core';
 import { ImportFlow } from './../components/import/import-flow';
 import './import.scss';
+import { Firehose } from './../../../../public/components/utils';
+import { NamespaceModel } from './../../../../public/models';
 
 const ImportPage: React.FunctionComponent = () => (
   <PageSection variant={PageSectionVariants.light}>
