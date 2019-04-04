@@ -65,21 +65,6 @@ class ImportFlow extends React.Component<any, any> {
     }
   ];
 
-  applicationNames = [
-    {
-      value: '',
-      label: 'please application name'
-    },
-    {
-      value: 'application-1',
-      label: 'Application 1'
-    },
-    {
-      value: 'application-2',
-      label: 'Application 2'
-    }
-  ]
-
   render() {
     const { namespace } = this.props;
     return (
