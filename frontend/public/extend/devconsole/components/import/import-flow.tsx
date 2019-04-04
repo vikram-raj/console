@@ -9,8 +9,10 @@ import {
   ActionGroup,
   Button
 } from '@patternfly/react-core';
+import { NamespaceModel, ProjectModel } from './../../../../../public/models';
+import { connect } from 'react-redux';
 
-export class ImportFlow extends React.Component<any, any> {
+class ImportFlow extends React.Component<any, any> {
   constructor(props) {
     super(props);
     this.state = {
@@ -21,6 +23,8 @@ export class ImportFlow extends React.Component<any, any> {
       builderImage: ''
     };
   }
+
+  getModel = (userProjects) => userProjects ? ProjectModel : NamespaceModel;
 
   handleGitTypeChange = (gitType: string, event) => {
     this.setState({ gitType: gitType });
@@ -36,6 +40,10 @@ export class ImportFlow extends React.Component<any, any> {
 
   handleNameChange = (name: string) => {
     this.setState({ name: name });
+  }
+
+  handleSubmit = (event) => {
+    event.preventDefault();
   }
 
   gitTypes = [
@@ -73,6 +81,7 @@ export class ImportFlow extends React.Component<any, any> {
   ]
 
   render() {
+    const { namespace } = this.props;
     return (
       <div>
         <div>
@@ -81,7 +90,7 @@ export class ImportFlow extends React.Component<any, any> {
             Some help text about the section lorem ipsum
           </p>
         </div>
-        <Form isHorizontal>
+        <Form onSubmit={this.handleSubmit} isHorizontal>
           <FormGroup
             label='Git Type'
             isRequired
@@ -120,8 +129,8 @@ export class ImportFlow extends React.Component<any, any> {
               name='applicationName'
               id='import-application-name'
               onChange={ this.handleApplicationNameChange }>
-              {this.applicationNames.map((appName, index) => (
-                <FormSelectOption key={index} value={appName.value} label={appName.label} />
+              {namespace.data.map((ns, index) => (
+                <FormSelectOption key={index} value={ns.metadata.uid} label={ns.metadata.name} />
               ))}
             </FormSelect>
           </FormGroup>
@@ -139,7 +148,7 @@ export class ImportFlow extends React.Component<any, any> {
               name='name'/>
           </FormGroup>
           <ActionGroup>
-            <Button variant='primary'>Create</Button>
+            <Button type="submit" variant='primary'>Create</Button>
             <Button variant='secondary'>Cancel</Button>
           </ActionGroup>
         </Form>
@@ -147,3 +156,7 @@ export class ImportFlow extends React.Component<any, any> {
     )
   }
 }
+const mapStateToProps = (state) => {
+  return state;
+}
+export default connect(mapStateToProps)(ImportFlow);
