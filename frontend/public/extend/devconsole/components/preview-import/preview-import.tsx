@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { ModelessOverlay, Modal } from 'patternfly-react';
 import { ImportFlow } from './../import/import-flow';
-import { CatalogListPage } from './../../../../../public/components/catalog/catalog-page';
-import { CatalogTileViewPage } from './../../../../../public/components/catalog/catalog-items';
+import './preview-import.scss';
 
 export class PreviewImport extends React.Component<any, any> {
   constructor(props) {
@@ -24,7 +23,9 @@ export class PreviewImport extends React.Component<any, any> {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <ImportFlow></ImportFlow>
+          <div className='preview-import__body'>
+            <ImportFlow></ImportFlow>
+          </div>
         </Modal.Body>
       </ModelessOverlay>
     )
