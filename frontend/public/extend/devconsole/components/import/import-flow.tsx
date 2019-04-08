@@ -1,5 +1,6 @@
 // import * as _ from 'lodash-es';
 import * as React from 'react';
+import { connect } from 'react-redux';
 import {
   FormGroup,
   TextInput,
@@ -10,7 +11,6 @@ import {
   Button
 } from '@patternfly/react-core';
 import { NamespaceModel, ProjectModel } from './../../../../../public/models';
-import { connect } from 'react-redux';
 
 class ImportFlow extends React.Component<any, any> {
   constructor(props) {
@@ -105,13 +105,11 @@ class ImportFlow extends React.Component<any, any> {
     const { namespace } = this.props;
     return (
       <div>
-        <div>
-          <p>Git</p>
-          <p>
-            Some help text about the section lorem ipsum
-          </p>
-        </div>
-        <Form onSubmit={this.handleSubmit}>
+        <p>Git</p>
+        <p>
+          Some help text about the section lorem ipsum
+        </p>
+        <Form onSubmit={this.handleSubmit} isHorizontal>
           <FormGroup
             label='Git Repository URL'
             isRequired
