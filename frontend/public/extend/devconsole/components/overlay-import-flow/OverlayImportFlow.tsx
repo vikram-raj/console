@@ -25,9 +25,7 @@ export const OverlayImportFlow: React.FunctionComponent<Props> = (props: Props) 
       </Modal.Header>
       <Modal.Body>
         <div className='odc-overlay-import__modal-body'>
-          <Firehose resources={[{kind: NamespaceModel.kind, prop: 'namespace', isList: true}]}>
-            <ImportFlow />
-          </Firehose>
+          <ImportFlow />
         </div>
       </Modal.Body>
     </ModelessOverlay>
