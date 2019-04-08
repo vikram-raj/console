@@ -20,7 +20,7 @@ import { createProjectMessageStateToProps } from '../ui/ui-reducers';
 import PerspectiveLink from '../extend/devconsole/shared/components/PerspectiveLink';
 import { getActivePerspective } from '../ui/ui-selectors';
 import { pathWithPerspective } from './utils/perspective';
-import { PreviewImport } from './../../public/extend/devconsole/components/preview-import/preview-import';
+import { OverlayImportFlow } from '../extend/devconsole/components/overlay-import-flow/OverlayImportFlow';
 
 const getModel = useProjects => useProjects ? ProjectModel : NamespaceModel;
 const getDisplayName = obj => _.get(obj, ['metadata', 'annotations', 'openshift.io/display-name']);
@@ -254,7 +254,7 @@ class NamespaceBarDropdowns_ extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: false,
+      isImportOverlayOpen: false,
     };
     this.importOverlay = this.importOverlay.bind(this);
   }
@@ -268,8 +268,7 @@ class NamespaceBarDropdowns_ extends React.Component {
   }
 
   importOverlay() {
-    const isOpen = this.state.isOpen;
-    this.setState({isOpen: !isOpen});
+    this.setState(({isImportOverlayOpen}) => ({isImportOverlayOpen: !isImportOverlayOpen}));
   }
 
   render() {
@@ -318,8 +317,8 @@ class NamespaceBarDropdowns_ extends React.Component {
     ];
 
     return <div className="co-namespace-bar__dropdowns">
-      <PreviewImport
-        isOpen={this.state.isOpen} closeModal={this.importOverlay} />
+      <OverlayImportFlow
+        isOpen={this.state.isImportOverlayOpen} closeModal={this.importOverlay} />
       <Dropdown
         className="co-namespace-selector"
         menuClassName="co-namespace-selector__menu"
