@@ -20,7 +20,7 @@ class ImportFlow extends React.Component<any, any> {
       gitRepoUrl: '',
       applicationName: '',
       name: '',
-      builderImage: ''
+      builderImage: '',
     };
   }
 
@@ -42,7 +42,12 @@ class ImportFlow extends React.Component<any, any> {
     this.setState({ name: name });
   }
 
+  handleBuilderImageChange = (builderImage: string) => {
+    this.setState({ builderImage:  builderImage });
+  }
+
   handleSubmit = (event) => {
+    console.log(this.state);
     event.preventDefault();
   }
 
@@ -65,6 +70,37 @@ class ImportFlow extends React.Component<any, any> {
     }
   ];
 
+  builderImages = [
+    {
+      value: '.net',
+      label: '.Net',
+    },
+    {
+      value: 'nodejs',
+      label: 'Node.js',
+    },
+    {
+      value: 'perl',
+      label: 'Perl',
+    },
+    {
+      value: 'php',
+      label: 'PHP',
+    },
+    {
+      value: 'python',
+      label: 'Python',
+    },
+    {
+      value: 'ruby',
+      label: 'Ruby',
+    },
+    {
+      value: 'redhatopenjdk8',
+      label: 'Red Hat OpenJDK 8',
+    },
+  ];
+
   render() {
     const { namespace } = this.props;
     return (
@@ -75,7 +111,19 @@ class ImportFlow extends React.Component<any, any> {
             Some help text about the section lorem ipsum
           </p>
         </div>
-        <Form onSubmit={this.handleSubmit} isHorizontal>
+        <Form onSubmit={this.handleSubmit}>
+          <FormGroup
+            label='Git Repository URL'
+            isRequired
+            fieldId='import-git-repo-url'>
+            <TextInput
+              value={ this.state.gitRepoUrl }
+              onChange={ this.handleGitRepoUrlChange }
+              isRequired
+              type='text'
+              id='import-git-repo-url'
+              name='gitRepoUrl' />
+          </FormGroup>
           <FormGroup
             label='Git Type'
             isRequired
@@ -91,18 +139,6 @@ class ImportFlow extends React.Component<any, any> {
                 <FormSelectOption key={index} value={gitType.value} label={gitType.label} />
               ))}
             </FormSelect>
-          </FormGroup>
-          <FormGroup
-            label='Git Repository URL'
-            isRequired
-            fieldId='import-git-repo-url'>
-            <TextInput
-              value={ this.state.gitRepoUrl }
-              onChange={ this.handleGitRepoUrlChange }
-              isRequired
-              type='text'
-              id='import-git-repo-url'
-              name='gitRepoUrl'/>
           </FormGroup>
           <FormGroup
             label='Application Name'
@@ -131,6 +167,21 @@ class ImportFlow extends React.Component<any, any> {
               type='text'
               id='import-name'
               name='name'/>
+          </FormGroup>
+          <FormGroup
+            label='Builder Image'
+            isRequired
+            fieldId='import-builder-image'
+            helperText='Some helper text'>
+            <FormSelect
+              value={ this.state.builderImage }
+              name='builderImage'
+              id='import-builder-image'
+              onChange={ this.handleBuilderImageChange }>
+              {this.builderImages.map((builderImage, index) => (
+                <FormSelectOption key={index} value={builderImage.value} label={builderImage.label} />
+              ))}
+            </FormSelect>
           </FormGroup>
           <ActionGroup>
             <Button type="submit" variant='primary'>Create</Button>
