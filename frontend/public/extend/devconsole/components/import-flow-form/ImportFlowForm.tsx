@@ -1,6 +1,14 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
+import {
+  Form,
+  FormControl,
+  FormGroup,
+  ControlLabel,
+  HelpBlock,
+  Button
+} from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
 import './ImportFlowForm.scss'
 
@@ -86,29 +94,31 @@ class ImportFlowForm extends React.Component<Props, State> {
         <p>
           Some help text about the section lorem ipsum
         </p>
-        <form onSubmit={this.handleSubmit} name="form" className="co-m-pane__body-group co-m-pane__form">
-          <div className='form-group'>
-            <label className='control-label co-required' htmlFor='import-git-repo-url'>Git Repository URL</label>
-            <input
-              className='form-control'
-              value={ gitRepoUrl }
-              onChange={ this.handleGitRepoUrlChange }
-              required
-              type='text'
-              id='import-git-repo-url'
-              name='gitRepoUrl' />
-          </div>
-          <div className='form-group'>
-            <label className='control-label co-required' htmlFor='import-git-type'>Git Type</label>
+        <Form onSubmit={this.handleSubmit} className='co-m-pane__body-group co-m-pane__form'>
+          <FormGroup controlId='import-git-repo-url'>
+            <ControlLabel className='co-required'>Git Repository URL</ControlLabel>
+            <FormControl
+            type="text"
+            required
+            value={ gitRepoUrl }
+            onChange={ this.handleGitRepoUrlChange }
+            id='import-git-repo-url'
+            name='gitRepoUrl' />
+            <HelpBlock>
+              Some help text with explanation
+            </HelpBlock>
+          </FormGroup>
+          <FormGroup controlId='import-git-type'>
+            <ControlLabel className='co-required'>Git Type</ControlLabel>
             <Dropdown
               dropDownClassName='dropdown--full-width'
               items={this.gitTypes}
               selectedKey={gitType}
               title={this.gitTypes[gitType]}
               onChange={this.handleGitTypeChange} />
-          </div>
-          <div className='form-group'>
-            <label className='control-label co-required' htmlFor='import-application-name'>Application Name</label>
+          </FormGroup>
+          <FormGroup controlId='import-application-name'>
+            <ControlLabel className='co-required'>Application Name</ControlLabel>
             <Dropdown
               dropDownClassName='dropdown--full-width'
               items={namespaces}
@@ -117,32 +127,37 @@ class ImportFlowForm extends React.Component<Props, State> {
               onChange={this.handleApplicationNameChange}
               autocompleteFilter={this.autocompleteFilter}
               autocompletePlaceholder={'Select application name'} />
-          </div>
-          <div className='form-group'>
-            <label className='control-label co-required' htmlFor='import-name'>Name</label>
-            <input
-              className='form-control'
+            <HelpBlock>
+              Some help text with explanation
+            </HelpBlock>
+          </FormGroup>
+          <FormGroup controlId='import-name'>
+            <ControlLabel className='co-required'>Name</ControlLabel>
+            <FormControl
               value={ name }
               onChange={ this.handleNameChange }
               required
               type='text'
               id='import-name'
               name='name'/>
-          </div>
-          <div className='form-group'>
-            <label className='control-label co-required' htmlFor='import-builder-image'>Builder Image</label>
+            <HelpBlock>
+              Idenfies the resources created for this application
+            </HelpBlock>
+          </FormGroup>
+          <FormGroup controlId='import-builder-image'>
+            <ControlLabel className='co-required'>Builder Image</ControlLabel>
             <Dropdown
               dropDownClassName='dropdown--full-width'
               items={this.builderImages}
               selectedKey={builderImage}
               title={this.builderImages[builderImage]}
               onChange={this.handleBuilderImageChange} />
-          </div>
+          </FormGroup>
           <div className='co-m-btn-bar'>
-            <button type='submit' className="btn btn-primary">Create</button>
-            <button type='button' className="btn btn-default">Cancel</button>
+            <Button type='submit' bsStyle="primary">Create</Button>
+            <Button type='button'>Cancel</Button>
           </div>
-        </form>
+        </Form>
       </div>
     )
   }
