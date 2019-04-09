@@ -297,11 +297,7 @@ class NamespaceBarDropdowns_ extends React.Component {
 
     const onChange = newNamespace => dispatch(UIActions.setActiveNamespace(newNamespace));
 
-    const addActions = [
-      {
-        label: 'Import from Git',
-        callback: this.importOverlay,
-      },
+    let addActions = [
       {
         label: 'Browse Catalog',
         href: pathWithPerspective(activePerspective, '/catalog'),
@@ -315,6 +311,17 @@ class NamespaceBarDropdowns_ extends React.Component {
         href: pathWithPerspective(activePerspective, formatNamespacedRouteForResource('import', activeNamespace)),
       },
     ];
+
+    const importFromGitAction = [
+      {
+        label: 'Import from Git',
+        callback: this.importOverlay,
+      },
+    ];
+
+    if (activePerspective === 'dev') {
+      addActions = [...importFromGitAction, ...addActions];
+    }
 
     return <div className="co-namespace-bar__dropdowns">
       <OverlayImportFlow
