@@ -1,14 +1,8 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import {
-  FormGroup,
-  TextInput,
-  Form,
-  FormSelectOption,
-  FormSelect,
-  ActionGroup,
-  Button
-} from '@patternfly/react-core';
+import * as fuzzy from 'fuzzysearch';
+import { Dropdown } from './../../../../../public/components/utils';
+import './ImportFlowForm.scss'
 
 interface State {
   gitType: string,
@@ -28,7 +22,7 @@ class ImportFlowForm extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
-      gitType: 'please choose Git type',
+      gitType: '',
       gitRepoUrl: '',
       applicationName: '',
       name: '',
@@ -36,70 +30,38 @@ class ImportFlowForm extends React.Component<Props, State> {
     };
   }
 
-  gitTypes = [
-    {
-      value: '',
-      label: 'please choose Git type'
-    },
-    {
-      value: 'github',
-      label: 'GitHub'
-    },
-    {
-      value: 'gitlab',
-      label: 'GitLab'
-    },
-    {
-      value: 'bitbucket',
-      label: 'Bitbucket'
-    }
-  ];
+  gitTypes = {
+    '': 'please choose Git type',
+    'github': 'GitHub',
+    'gitlab': 'GitLab',
+    'bitbucket': 'Bitbucket'
+  };
 
-  builderImages = [
-    {
-      value: '.net',
-      label: '.Net',
-    },
-    {
-      value: 'nodejs',
-      label: 'Node.js',
-    },
-    {
-      value: 'perl',
-      label: 'Perl',
-    },
-    {
-      value: 'php',
-      label: 'PHP',
-    },
-    {
-      value: 'python',
-      label: 'Python',
-    },
-    {
-      value: 'ruby',
-      label: 'Ruby',
-    },
-    {
-      value: 'redhatopenjdk8',
-      label: 'Red Hat OpenJDK 8',
-    },
-  ];
+  builderImages = {
+    '': 'Please choose builder image',
+    '.net': '.Net',
+    'nodejs': 'Node.js',
+    'perl': 'Perl',
+    'php': 'PHP',
+    'python': 'Python',
+    'ruby': 'Ruby',
+    'redhatopenjdk8': 'Red Hat OpenJDK 8',
+  };
 
-  handleGitTypeChange = (gitType: string, event) => {
+  handleGitTypeChange = (gitType: string) => {
     this.setState({ gitType: gitType });
   }
 
-  handleGitRepoUrlChange = (gitRepoUrl: string) => {
-    this.setState({ gitRepoUrl: gitRepoUrl });
+  handleGitRepoUrlChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
+    this.setState({ gitRepoUrl: event.currentTarget.value });
   }
 
-  handleApplicationNameChange = (applicationName: string, event) => {
+  handleApplicationNameChange = (applicationName: string) => {
     this.setState({ applicationName: applicationName })
   }
 
-  handleNameChange = (name: string) => {
-    this.setState({ name: name });
+  handleNameChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
+    this.setState({ name: event.currentTarget.value });
   }
 
   handleBuilderImageChange = (builderImage: string) => {
@@ -111,92 +73,76 @@ class ImportFlowForm extends React.Component<Props, State> {
     event.preventDefault();
   }
 
+  autocompleteFilter = (text, item) => fuzzy(text, item);
+
   render() {
     const { gitType, gitRepoUrl, applicationName, name, builderImage } = this.state;
     const { namespace } = this.props;
+    const namespaces = {};
+    namespaces[''] = 'Choose project name';
+    namespace.data.forEach(ns => namespaces[ns.metadata.uid] = ns.metadata.name);
     return (
-      <div>
-        <p>Git</p>
+      <div className='odc-import-flow-form'>
         <p>
           Some help text about the section lorem ipsum
         </p>
-        <Form onSubmit={this.handleSubmit} isHorizontal>
-          <FormGroup
-            label='Git Repository URL'
-            isRequired
-            fieldId='import-git-repo-url'>
-            <TextInput
+        <form onSubmit={this.handleSubmit} name="form" className="co-m-pane__body-group co-m-pane__form">
+          <div className='form-group'>
+            <label className='control-label co-required' htmlFor='import-git-repo-url'>Git Repository URL</label>
+            <input
+              className='form-control'
               value={ gitRepoUrl }
               onChange={ this.handleGitRepoUrlChange }
-              isRequired
+              required
               type='text'
               id='import-git-repo-url'
               name='gitRepoUrl' />
-          </FormGroup>
-          <FormGroup
-            label='Git Type'
-            isRequired
-            fieldId='import-git-type'
-            helperText='Some help text with explanation'>
-            <FormSelect
-              value={ gitType }
-              name='gitType'
-              id='import-git-type'
-              onChange={this.handleGitTypeChange}
-              >
-              {this.gitTypes.map((gitType, index) => (
-                <FormSelectOption key={index} value={gitType.value} label={gitType.label} />
-              ))}
-            </FormSelect>
-          </FormGroup>
-          <FormGroup
-            label='Application Name'
-            isRequired
-            fieldId='import-application-name'
-            helperText='Some helper text'>
-            <FormSelect
-              value={ applicationName }
-              name='applicationName'
-              id='import-application-name'
-              onChange={ this.handleApplicationNameChange }>
-              {namespace.data.map((ns, index) => (
-                <FormSelectOption key={index} value={ns.metadata.uid} label={ns.metadata.name} />
-              ))}
-            </FormSelect>
-          </FormGroup>
-          <FormGroup
-            label='Name'
-            isRequired
-            fieldId='import-name'
-            helperText='Identifies the resources created for this application'>
-            <TextInput
+          </div>
+          <div className='form-group'>
+            <label className='control-label co-required' htmlFor='import-git-type'>Git Type</label>
+            <Dropdown
+              dropDownClassName='dropdown--full-width'
+              items={this.gitTypes}
+              selectedKey={gitType}
+              title={this.gitTypes[gitType]}
+              onChange={this.handleGitTypeChange} />
+          </div>
+          <div className='form-group'>
+            <label className='control-label co-required' htmlFor='import-application-name'>Application Name</label>
+            <Dropdown
+              dropDownClassName='dropdown--full-width'
+              items={namespaces}
+              selectedKey={applicationName}
+              title={namespaces[applicationName]}
+              onChange={this.handleApplicationNameChange}
+              autocompleteFilter={this.autocompleteFilter}
+              autocompletePlaceholder={'Select application name'} />
+          </div>
+          <div className='form-group'>
+            <label className='control-label co-required' htmlFor='import-name'>Name</label>
+            <input
+              className='form-control'
               value={ name }
               onChange={ this.handleNameChange }
-              isRequired
+              required
               type='text'
               id='import-name'
               name='name'/>
-          </FormGroup>
-          <FormGroup
-            label='Builder Image'
-            isRequired
-            fieldId='import-builder-image'
-            helperText='Some helper text'>
-            <FormSelect
-              value={ builderImage }
-              name='builderImage'
-              id='import-builder-image'
-              onChange={ this.handleBuilderImageChange }>
-              {this.builderImages.map((builderImage, index) => (
-                <FormSelectOption key={index} value={builderImage.value} label={builderImage.label} />
-              ))}
-            </FormSelect>
-          </FormGroup>
-          <ActionGroup>
-            <Button type="submit" variant='primary'>Create</Button>
-            <Button variant='secondary'>Cancel</Button>
-          </ActionGroup>
-        </Form>
+          </div>
+          <div className='form-group'>
+            <label className='control-label co-required' htmlFor='import-builder-image'>Builder Image</label>
+            <Dropdown
+              dropDownClassName='dropdown--full-width'
+              items={this.builderImages}
+              selectedKey={builderImage}
+              title={this.builderImages[builderImage]}
+              onChange={this.handleBuilderImageChange} />
+          </div>
+          <div className='co-m-btn-bar'>
+            <button type='submit' className="btn btn-primary">Create</button>
+            <button type='button' className="btn btn-default">Cancel</button>
+          </div>
+        </form>
       </div>
     )
   }
