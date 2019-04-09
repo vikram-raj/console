@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button } from '@patternfly/react-core';
 
-const HomePage: React.SFC = () => {
+const HomePage: React.FunctionComponent = () => {
   return (
     <div className="co-well">
       <h4>Developer console Getting Started</h4>
