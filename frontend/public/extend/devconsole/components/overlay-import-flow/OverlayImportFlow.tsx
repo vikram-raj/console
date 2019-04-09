@@ -23,12 +23,11 @@ export const OverlayImportFlow: React.FunctionComponent<Props> = (props: Props) 
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className='odc-overlay-import__modal-body'>
+        <div>
           <ImportFlow />
         </div>
       </Modal.Body>
     </ModelessOverlay>
   )
 }
-
 
