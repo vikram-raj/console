@@ -9,5 +9,5 @@ export const ImportFlow: React.FunctionComponent = () => {
     <Firehose resources={[{kind: NamespaceModel.kind, prop: 'namespace', isList: true}]}>
       <ImportFlowForm />
     </Firehose>
-  )
-}
+  );
+};
