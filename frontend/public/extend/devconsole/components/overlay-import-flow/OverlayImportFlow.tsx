@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-undef */
 import * as React from 'react';
 import { ModelessOverlay, Modal } from 'patternfly-react';
 import { ImportFlow } from '../import/import-flow';
@@ -6,13 +7,13 @@ import './OverlayImportFlow.scss';
 type Props = {
   isOpen: boolean,
   closeModal: () => boolean
-}
+};
 export const OverlayImportFlow: React.FunctionComponent<Props> = (props: Props) => {
 
   const { isOpen, closeModal } = props;
   return (
     <ModelessOverlay
-      show={ isOpen }
+      show={isOpen}
       bsSize={'lg'}>
       <Modal.Header>
         <Modal.CloseButton
@@ -28,6 +29,6 @@ export const OverlayImportFlow: React.FunctionComponent<Props> = (props: Props) 
         </div>
       </Modal.Body>
     </ModelessOverlay>
-  )
-}
+  );
+};
 
