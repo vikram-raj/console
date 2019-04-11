@@ -7,13 +7,13 @@ import './OverlayImportFlow.scss';
 type Props = {
   isOpen: boolean,
   closeModal: () => boolean
-}
+};
 export const OverlayImportFlow: React.FunctionComponent<Props> = (props: Props) => {
 
   const { isOpen, closeModal } = props;
   return (
     <ModelessOverlay
-      show={ isOpen }
+      show={isOpen}
       bsSize={'lg'}>
       <Modal.Header>
         <Modal.CloseButton
@@ -29,6 +29,6 @@ export const OverlayImportFlow: React.FunctionComponent<Props> = (props: Props) 
         </div>
       </Modal.Body>
     </ModelessOverlay>
-  )
-}
+  );
+};
 
