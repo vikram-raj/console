@@ -20,7 +20,6 @@ import { createProjectMessageStateToProps } from '../ui/ui-reducers';
 import PerspectiveLink from '../extend/devconsole/shared/components/PerspectiveLink';
 import { getActivePerspective } from '../ui/ui-selectors';
 import { pathWithPerspective } from './utils/perspective';
-import { OverlayImportFlow } from '../extend/devconsole/components/overlay-import-flow/OverlayImportFlow';
 
 const getModel = useProjects => useProjects ? ProjectModel : NamespaceModel;
 const getDisplayName = obj => _.get(obj, ['metadata', 'annotations', 'openshift.io/display-name']);
@@ -267,10 +266,6 @@ class NamespaceBarDropdowns_ extends React.Component {
     }
   }
 
-  importOverlay() {
-    this.setState(({isImportOverlayOpen}) => ({isImportOverlayOpen: !isImportOverlayOpen}));
-  }
-
   render() {
     const { activeNamespace, activePerspective, dispatch, canListNS, useProjects } = this.props;
     if (flagPending(canListNS)) {
@@ -297,7 +292,7 @@ class NamespaceBarDropdowns_ extends React.Component {
 
     const onChange = newNamespace => dispatch(UIActions.setActiveNamespace(newNamespace));
 
-    let addActions = [
+    const addActions = [
       {
         label: 'Browse Catalog',
         href: pathWithPerspective(activePerspective, '/catalog'),
@@ -312,20 +307,7 @@ class NamespaceBarDropdowns_ extends React.Component {
       },
     ];
 
-    const importFromGitAction = [
-      {
-        label: 'Import from Git',
-        callback: this.importOverlay,
-      },
-    ];
-
-    if (activePerspective === 'dev') {
-      addActions = [...importFromGitAction, ...addActions];
-    }
-
     return <div className="co-namespace-bar__dropdowns">
-      <OverlayImportFlow
-        isOpen={this.state.isImportOverlayOpen} closeModal={this.importOverlay} />
       <Dropdown
         className="co-namespace-selector"
         menuClassName="co-namespace-selector__menu"
