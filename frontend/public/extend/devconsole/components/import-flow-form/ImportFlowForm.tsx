@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
@@ -7,10 +8,10 @@ import {
   FormGroup,
   ControlLabel,
   HelpBlock,
-  Button
+  Button,
 } from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
-import './ImportFlowForm.scss'
+import './ImportFlowForm.scss';
 
 interface State {
   gitType: string,
@@ -18,6 +19,13 @@ interface State {
   applicationName: string,
   name: string,
   builderImage: string,
+  validated: boolean,
+  gitTypeError: string,
+  gitRepoUrlError: string,
+  applicationNameError: string,
+  nameError: string,
+  builderImageError: string,
+  gitTypeDetected: boolean,
 }
 
 interface Props {
@@ -35,6 +43,13 @@ class ImportFlowForm extends React.Component<Props, State> {
       applicationName: '',
       name: '',
       builderImage: '',
+      validated: false,
+      gitTypeError: '',
+      gitRepoUrlError: '',
+      applicationNameError: '',
+      nameError: '',
+      builderImageError: '',
+      gitTypeDetected: false,
     };
   }
 
@@ -42,7 +57,7 @@ class ImportFlowForm extends React.Component<Props, State> {
     '': 'please choose Git type',
     'github': 'GitHub',
     'gitlab': 'GitLab',
-    'bitbucket': 'Bitbucket'
+    'bitbucket': 'Bitbucket',
   };
 
   builderImages = {
@@ -57,7 +72,7 @@ class ImportFlowForm extends React.Component<Props, State> {
   };
 
   handleGitTypeChange = (gitType: string) => {
-    this.setState({ gitType: gitType });
+    this.setState({ gitType });
   }
 
   handleGitRepoUrlChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
@@ -65,7 +80,7 @@ class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleApplicationNameChange = (applicationName: string) => {
-    this.setState({ applicationName: applicationName })
+    this.setState({ applicationName });
   }
 
   handleNameChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
@@ -73,54 +88,103 @@ class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleBuilderImageChange = (builderImage: string) => {
-    this.setState({ builderImage:  builderImage });
+    this.setState({ builderImage });
+  }
+
+  validateGitRepo = (): void => {
+    const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+    if (!urlRegex.test(this.state.gitRepoUrl)) {
+      this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
+      this.setState({ gitTypeDetected: false });
+    } else {
+      this.setState({ gitRepoUrlError: '' });
+      this.detectGitType();
+    }
+  }
+
+  detectGitType = (): void => {
+    if (this.state.gitRepoUrl.includes('github.com')) {
+      this.setState({ gitType: 'github', gitTypeDetected: true });
+    } else if (this.state.gitRepoUrl.includes('bitbucket.org')) {
+      this.setState({ gitType: 'bitbucket', gitTypeDetected: true });
+    } else if (this.state.gitRepoUrl.includes('gitlab.com')) {
+      this.setState({ gitType: 'gitlab', gitTypeDetected: true });
+    } else {
+      this.setState({ gitType: '', gitTypeDetected: true });
+    }
   }
 
   handleSubmit = (event) => {
-    console.log(this.state);
-    event.preventDefault();
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.setState({ validated: true });
   }
 
   autocompleteFilter = (text, item) => fuzzy(text, item);
 
   render() {
-    const { gitType, gitRepoUrl, applicationName, name, builderImage } = this.state;
+    const {
+      gitType,
+      gitRepoUrl,
+      applicationName,
+      name,
+      builderImage,
+      validated,
+      // gitTypeError,
+      gitRepoUrlError,
+      // applicationNameError,
+      // nameError,
+      // builderImageError,
+      gitTypeDetected,
+    } = this.state;
     const { namespace } = this.props;
     const namespaces = {};
     namespaces[''] = 'Choose project name';
     namespace.data.forEach(ns => namespaces[ns.metadata.uid] = ns.metadata.name);
+    let gitTypeField;
+
+    if (gitTypeDetected) {
+      gitTypeField = <FormGroup controlId="import-git-type">
+        <ControlLabel className="co-required">Git Type</ControlLabel>
+        <Dropdown
+          dropDownClassName="dropdown--full-width"
+          items={this.gitTypes}
+          selectedKey={gitType}
+          title={this.gitTypes[gitType]}
+          onChange={this.handleGitTypeChange} />
+      </FormGroup>;
+    } else {
+      gitTypeField = null;
+    }
     return (
-      <div className='odc-import-flow-form'>
+      <div className="odc-import-flow-form">
         <p>
           Some help text about the section lorem ipsum
         </p>
-        <Form onSubmit={this.handleSubmit} className='co-m-pane__body-group co-m-pane__form'>
-          <FormGroup controlId='import-git-repo-url'>
-            <ControlLabel className='co-required'>Git Repository URL</ControlLabel>
+        <Form
+          onSubmit={this.handleSubmit}
+          className="co-m-pane__body-group co-m-pane__form"
+          validated={validated}>
+          <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
+            <ControlLabel className="co-required">Git Repository URL</ControlLabel>
             <FormControl
-            type="text"
-            required
-            value={ gitRepoUrl }
-            onChange={ this.handleGitRepoUrlChange }
-            id='import-git-repo-url'
-            name='gitRepoUrl' />
-            <HelpBlock>
-              Some help text with explanation
-            </HelpBlock>
+              type="text"
+              required
+              value={gitRepoUrl}
+              onChange={this.handleGitRepoUrlChange}
+              onBlur={this.validateGitRepo}
+              id="import-git-repo-url"
+              name="gitRepoUrl" />
+            <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
           </FormGroup>
-          <FormGroup controlId='import-git-type'>
-            <ControlLabel className='co-required'>Git Type</ControlLabel>
+          { gitTypeField }
+          <FormGroup controlId="import-application-name">
+            <ControlLabel className="co-required">Application Name</ControlLabel>
             <Dropdown
-              dropDownClassName='dropdown--full-width'
-              items={this.gitTypes}
-              selectedKey={gitType}
-              title={this.gitTypes[gitType]}
-              onChange={this.handleGitTypeChange} />
-          </FormGroup>
-          <FormGroup controlId='import-application-name'>
-            <ControlLabel className='co-required'>Application Name</ControlLabel>
-            <Dropdown
-              dropDownClassName='dropdown--full-width'
+              dropDownClassName="dropdown--full-width"
               items={namespaces}
               selectedKey={applicationName}
               title={namespaces[applicationName]}
@@ -131,39 +195,39 @@ class ImportFlowForm extends React.Component<Props, State> {
               Some help text with explanation
             </HelpBlock>
           </FormGroup>
-          <FormGroup controlId='import-name'>
-            <ControlLabel className='co-required'>Name</ControlLabel>
+          <FormGroup controlId="import-name">
+            <ControlLabel className="co-required">Name</ControlLabel>
             <FormControl
-              value={ name }
-              onChange={ this.handleNameChange }
+              value={name}
+              onChange={this.handleNameChange}
               required
-              type='text'
-              id='import-name'
-              name='name'/>
+              type="text"
+              id="import-name"
+              name="name" />
             <HelpBlock>
               Idenfies the resources created for this application
             </HelpBlock>
           </FormGroup>
-          <FormGroup controlId='import-builder-image'>
-            <ControlLabel className='co-required'>Builder Image</ControlLabel>
+          <FormGroup controlId="import-builder-image">
+            <ControlLabel className="co-required">Builder Image</ControlLabel>
             <Dropdown
-              dropDownClassName='dropdown--full-width'
+              dropDownClassName="dropdown--full-width"
               items={this.builderImages}
               selectedKey={builderImage}
               title={this.builderImages[builderImage]}
               onChange={this.handleBuilderImageChange} />
           </FormGroup>
-          <div className='co-m-btn-bar'>
-            <Button type='submit' bsStyle="primary">Create</Button>
-            <Button type='button'>Cancel</Button>
+          <div className="co-m-btn-bar">
+            <Button type="submit" bsStyle="primary">Create</Button>
+            <Button type="button">Cancel</Button>
           </div>
         </Form>
       </div>
-    )
+    );
   }
 }
 
 const mapStateToProps = (state) => {
   return state;
-}
+};
 export default connect(mapStateToProps)(ImportFlowForm);
