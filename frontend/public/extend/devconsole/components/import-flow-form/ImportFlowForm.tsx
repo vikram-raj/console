@@ -19,7 +19,6 @@ interface State {
   applicationName: string,
   name: string,
   builderImage: string,
-  validated: boolean,
   gitTypeError: string,
   gitRepoUrlError: string,
   applicationNameError: string,
@@ -43,7 +42,6 @@ class ImportFlowForm extends React.Component<Props, State> {
       applicationName: '',
       name: '',
       builderImage: '',
-      validated: false,
       gitTypeError: '',
       gitRepoUrlError: '',
       applicationNameError: '',
@@ -115,12 +113,9 @@ class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleSubmit = (event) => {
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    this.setState({ validated: true });
+    console.log(this.state, '####');
+    event.preventDefault();
+    // const form = event.currentTarget;
   }
 
   autocompleteFilter = (text, item) => fuzzy(text, item);
@@ -132,7 +127,6 @@ class ImportFlowForm extends React.Component<Props, State> {
       applicationName,
       name,
       builderImage,
-      validated,
       // gitTypeError,
       gitRepoUrlError,
       // applicationNameError,
@@ -166,8 +160,7 @@ class ImportFlowForm extends React.Component<Props, State> {
         </p>
         <Form
           onSubmit={this.handleSubmit}
-          className="co-m-pane__body-group co-m-pane__form"
-          validated={validated}>
+          className="co-m-pane__body-group co-m-pane__form">
           <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
             <ControlLabel className="co-required">Git Repository URL</ControlLabel>
             <FormControl

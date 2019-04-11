@@ -250,13 +250,6 @@ const namespaceBarDropdownStateToProps = state => {
 };
 
 class NamespaceBarDropdowns_ extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isImportOverlayOpen: false,
-    };
-    this.importOverlay = this.importOverlay.bind(this);
-  }
 
   componentDidUpdate() {
     const { namespace, dispatch } = this.props;
