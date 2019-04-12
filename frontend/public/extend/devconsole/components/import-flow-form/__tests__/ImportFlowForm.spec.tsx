@@ -59,4 +59,32 @@ describe('ImportFlowForm: ', () => {
 
     expect(importFlowForm.state().name).toBe('node-app');
   });
+
+  it ('form submission', () => {
+    const importFlowForm = mount(<ImportFlowForm {...props} />);
+    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('change', {
+      target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' }
+    });
+    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('blur');
+    importFlowForm.find('Dropdown[data-test-id="import-application-name"]').simulate('change');
+    importFlowForm.find('input[data-test-id="import-name"]').simulate('change', {
+      target: { value: 'node-app' }
+    });
+    importFlowForm.find('Dropdown[data-test-id="import-builder-image"]').simulate('change');
+    importFlowForm.find('form[data-test-id="import-form"]').simulate('submit');
+    const importFormState = {
+      gitType: 'github',
+      gitRepoUrl: 'https://github.com/vikram-raj/console/tree/import-flow',
+      applicationName: '',
+      name: 'node-app',
+      builderImage: '',
+      gitTypeError: '',
+      gitRepoUrlError: '',
+      applicationNameError: 'Please select the application name',
+      nameError: '',
+      builderImageError: 'Please select the builder image',
+      gitTypeDetected: true,
+    }
+    expect(importFlowForm.state()).toEqual(importFormState);
+  });
 });
