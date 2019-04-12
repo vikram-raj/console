@@ -113,6 +113,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleApplicationNameChange = (applicationName: string) => {
+    console.log('####', applicationName);
     this.setState({ applicationName });
   };
 
