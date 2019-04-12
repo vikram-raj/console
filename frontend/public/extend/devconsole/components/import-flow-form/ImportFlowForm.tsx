@@ -78,7 +78,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleApplicationNameChange = (applicationName: string) => {
-    console.log('####', applicationName);
     this.setState({ applicationName });
   }
 
@@ -114,7 +113,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleSubmit = (event) => {
-    console.log(this.state, '####');
     event.preventDefault();
     // const form = event.currentTarget;
     if (this.state.applicationName === '') {
@@ -163,14 +161,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
           title={this.gitTypes[gitType]}
           onChange={this.handleGitTypeChange} />
       </FormGroup>;
-    } else {
-      gitTypeField = null;
     }
+
     return (
-      <div className="odc-import-flow-form">
-        <p>
-          Some help text about the section lorem ipsum
-        </p>
+      <div>
         <Form
           data-test-id="import-form"
           onSubmit={this.handleSubmit}
@@ -189,7 +183,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
             <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
           </FormGroup>
           { gitTypeField }
-          <FormGroup controlId="import-application-name" className={ applicationNameError ? 'has-error' : '' }>
+          <FormGroup controlId="import-application-name" className={applicationNameError ? 'has-error' : ''}>
             <ControlLabel className="co-required">Application Name</ControlLabel>
             <Dropdown
               dropDownClassName="dropdown--full-width"
@@ -218,7 +212,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
               Identifies the resources created for this application
             </HelpBlock>
           </FormGroup>
-          <FormGroup controlId="import-builder-image" className={ builderImageError ? 'has-error' : '' }>
+          <FormGroup controlId="import-builder-image" className={builderImageError ? 'has-error' : ''}>
             <ControlLabel className="co-required">Builder Image</ControlLabel>
             <Dropdown
               dropDownClassName="dropdown--full-width"
@@ -242,6 +236,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
 }
 
 const mapStateToProps = (state) => {
-  return state;
+  return {
+    namspace: state.k8s.projects,
+  };
 };
 export default connect(mapStateToProps)(ImportFlowForm);
