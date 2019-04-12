@@ -33,7 +33,7 @@ interface Props {
   }
 }
 
-class ImportFlowForm extends React.Component<Props, State> {
+export class ImportFlowForm extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
@@ -73,16 +73,16 @@ class ImportFlowForm extends React.Component<Props, State> {
     this.setState({ gitType });
   }
 
-  handleGitRepoUrlChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
-    this.setState({ gitRepoUrl: event.currentTarget.value });
+  handleGitRepoUrlChange = (event) => {
+    this.setState({ gitRepoUrl: event.target.value });
   }
 
   handleApplicationNameChange = (applicationName: string) => {
     this.setState({ applicationName });
   }
 
-  handleNameChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
-    this.setState({ name: event.currentTarget.value });
+  handleNameChange = (event) => {
+    this.setState({ name: event.target.value });
   }
 
   handleBuilderImageChange = (builderImage: string) => {
@@ -113,9 +113,19 @@ class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleSubmit = (event) => {
-    console.log(this.state, '####');
     event.preventDefault();
     // const form = event.currentTarget;
+    if (this.state.applicationName === '') {
+      this.setState({ applicationNameError: 'Please select the application name' });
+    } else {
+      this.setState({ applicationNameError: '' });
+    }
+
+    if (this.state.builderImage === '') {
+      this.setState({ builderImageError: 'Please select the builder image' });
+    } else {
+      this.setState({ builderImageError: '' });
+    }
   }
 
   autocompleteFilter = (text, item) => fuzzy(text, item);
@@ -129,9 +139,9 @@ class ImportFlowForm extends React.Component<Props, State> {
       builderImage,
       // gitTypeError,
       gitRepoUrlError,
-      // applicationNameError,
+      applicationNameError,
       // nameError,
-      // builderImageError,
+      builderImageError,
       gitTypeDetected,
     } = this.state;
     const { namespace } = this.props;
@@ -150,15 +160,12 @@ class ImportFlowForm extends React.Component<Props, State> {
           title={this.gitTypes[gitType]}
           onChange={this.handleGitTypeChange} />
       </FormGroup>;
-    } else {
-      gitTypeField = null;
     }
+
     return (
-      <div className="odc-import-flow-form">
-        <p>
-          Some help text about the section lorem ipsum
-        </p>
+      <div>
         <Form
+          data-test-id="import-form"
           onSubmit={this.handleSubmit}
           className="co-m-pane__body-group co-m-pane__form">
           <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
@@ -170,11 +177,12 @@ class ImportFlowForm extends React.Component<Props, State> {
               onChange={this.handleGitRepoUrlChange}
               onBlur={this.validateGitRepo}
               id="import-git-repo-url"
+              data-test-id="import-git-repo-url"
               name="gitRepoUrl" />
             <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
           </FormGroup>
           { gitTypeField }
-          <FormGroup controlId="import-application-name">
+          <FormGroup controlId="import-application-name" className={applicationNameError ? 'has-error' : ''}>
             <ControlLabel className="co-required">Application Name</ControlLabel>
             <Dropdown
               dropDownClassName="dropdown--full-width"
@@ -183,9 +191,10 @@ class ImportFlowForm extends React.Component<Props, State> {
               title={namespaces[applicationName]}
               onChange={this.handleApplicationNameChange}
               autocompleteFilter={this.autocompleteFilter}
-              autocompletePlaceholder={'Select application name'} />
+              autocompletePlaceholder={'Select application name'}
+              data-test-id="import-application-name" />
             <HelpBlock>
-              Some help text with explanation
+              { applicationNameError ? applicationNameError : 'Some help text with explanation' }
             </HelpBlock>
           </FormGroup>
           <FormGroup controlId="import-name">
@@ -196,19 +205,24 @@ class ImportFlowForm extends React.Component<Props, State> {
               required
               type="text"
               id="import-name"
-              name="name" />
+              name="name"
+              data-test-id="import-name" />
             <HelpBlock>
-              Idenfies the resources created for this application
+              Identifies the resources created for this application
             </HelpBlock>
           </FormGroup>
-          <FormGroup controlId="import-builder-image">
+          <FormGroup controlId="import-builder-image" className={builderImageError ? 'has-error' : ''}>
             <ControlLabel className="co-required">Builder Image</ControlLabel>
             <Dropdown
               dropDownClassName="dropdown--full-width"
               items={this.builderImages}
               selectedKey={builderImage}
               title={this.builderImages[builderImage]}
-              onChange={this.handleBuilderImageChange} />
+              onChange={this.handleBuilderImageChange}
+              data-test-id="import-builder-image" />
+            <HelpBlock>
+              { builderImageError ? builderImageError : 'Some help text with explanation' }
+            </HelpBlock>
           </FormGroup>
           <div className="co-m-btn-bar">
             <Button type="submit" bsStyle="primary">Create</Button>
@@ -221,6 +235,8 @@ class ImportFlowForm extends React.Component<Props, State> {
 }
 
 const mapStateToProps = (state) => {
-  return state;
+  return {
+    namspace: state.k8s.projects,
+  };
 };
 export default connect(mapStateToProps)(ImportFlowForm);
