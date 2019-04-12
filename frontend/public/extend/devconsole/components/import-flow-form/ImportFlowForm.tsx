@@ -78,6 +78,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleApplicationNameChange = (applicationName: string) => {
+    console.log('####', applicationName);
     this.setState({ applicationName });
   }
 
@@ -171,6 +172,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
           Some help text about the section lorem ipsum
         </p>
         <Form
+          data-test-id="import-form"
           onSubmit={this.handleSubmit}
           className="co-m-pane__body-group co-m-pane__form">
           <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
@@ -223,7 +225,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
               items={this.builderImages}
               selectedKey={builderImage}
               title={this.builderImages[builderImage]}
-              onChange={this.handleBuilderImageChange} />
+              onChange={this.handleBuilderImageChange}
+              data-test-id="import-builder-image" />
             <HelpBlock>
               { builderImageError ? builderImageError : 'Some help text with explanation' }
             </HelpBlock>
