@@ -1,6 +1,20 @@
 // eslint-disable-next-line no-unused-vars
 import { K8sKind } from '../module/k8s';
 
+export const GitSourceModel: K8sKind = {
+  kind: 'GitSource',
+  label: 'Git Source',
+  labelPlural: 'Git Sources',
+  apiGroup: 'devconsole.openshift.io',
+  apiVersion: 'v1alpha1',
+  path: 'gitsources',
+  abbr: 'GS',
+  namespaced: true,
+  crd: true,
+  plural: 'gitsources',
+  id: 'gitsource',
+};
+
 export const CatalogSourceConfigModel: K8sKind = {
   kind: 'CatalogSourceConfig',
   label: 'CatalogSourceConfig',

@@ -10,7 +10,9 @@ import {
   Button
 } from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
-import './ImportFlowForm.scss'
+import { k8sCreate } from '../../../../../public/module/k8s';
+import { GitSourceModel } from '../../../../../public/models';
+import './ImportFlowForm.scss';
 
 interface State {
   gitType: string,
@@ -26,16 +28,18 @@ interface Props {
   }
 }
 
+const initialState: State = {
+  gitType: '',
+  gitRepoUrl: '',
+  applicationName: '',
+  name: '',
+  builderImage: '',
+};
+
 class ImportFlowForm extends React.Component<Props, State> {
   constructor(props) {
     super(props);
-    this.state = {
-      gitType: '',
-      gitRepoUrl: '',
-      applicationName: '',
-      name: '',
-      builderImage: '',
-    };
+    this.state = initialState;
   }
 
   gitTypes = {
@@ -76,12 +80,25 @@ class ImportFlowForm extends React.Component<Props, State> {
     this.setState({ builderImage:  builderImage });
   }
 
-  handleSubmit = (event) => {
-    console.log(this.state);
-    event.preventDefault();
-  }
-
   autocompleteFilter = (text, item) => fuzzy(text, item);
+
+  getNameSpace = () => this.props.namespace.data
+    .filter(space => space.metadata.uid === this.state.applicationName)
+    .map(item => item.metadata.name)[0];
+
+  handleSubmit = (event) => {
+    const { builderImage, gitRepoUrl, name, gitType } = this.state;
+    const gitSource = {
+      apiVersion: 'devconsole.openshift.io/v1alpha1',
+      kind: 'GitSource',
+      metadata: { name, namespace: this.getNameSpace() },
+      spec: { url: gitRepoUrl, buildType: builderImage, gitType },
+    };
+    k8sCreate(GitSourceModel, gitSource)
+      .then(() => this.setState(initialState))
+      .catch(error => console.error( error));
+    event.preventDefault();
+  };
 
   render() {
     const { gitType, gitRepoUrl, applicationName, name, builderImage } = this.state;
@@ -98,12 +115,12 @@ class ImportFlowForm extends React.Component<Props, State> {
           <FormGroup controlId='import-git-repo-url'>
             <ControlLabel className='co-required'>Git Repository URL</ControlLabel>
             <FormControl
-            type="text"
-            required
-            value={ gitRepoUrl }
-            onChange={ this.handleGitRepoUrlChange }
-            id='import-git-repo-url'
-            name='gitRepoUrl' />
+              type="text"
+              required
+              value={ gitRepoUrl }
+              onChange={ this.handleGitRepoUrlChange }
+              id='import-git-repo-url'
+              name='gitRepoUrl' />
             <HelpBlock>
               Some help text with explanation
             </HelpBlock>
