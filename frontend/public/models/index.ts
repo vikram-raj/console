@@ -40,6 +40,18 @@ export const CatalogSourceModel: K8sKind = {
   plural: 'catalogsources',
 };
 
+export const GitSourceModel: K8sKind = {
+  label: 'GitSource',
+  labelPlural: 'GitSources',
+  apiGroup: 'devconsole.openshift.io',
+  apiVersion: 'v1alpha1',
+  path: 'gitsource',
+  plural: 'gitsources',
+  abbr: 'GS',
+  namespaced: true,
+  kind: 'GitSource',
+};
+
 export const PackageManifestModel: K8sKind = {
   kind: 'PackageManifest',
   label: 'PackageManifest',
