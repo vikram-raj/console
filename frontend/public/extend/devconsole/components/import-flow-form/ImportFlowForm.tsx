@@ -2,17 +2,14 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
-import {
-  Form,
-  FormControl,
-  FormGroup,
-  ControlLabel,
-  HelpBlock,
-  Button,
-} from 'patternfly-react';
+import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
 import { getActiveNamespace } from '../../../../ui/ui-actions';
 import './ImportFlowForm.scss';
+import { GitSourceModel } from '../../../../models';
+import { k8sCreate } from '../../../../module/k8s';
+import { getActiveNamespace } from '../../../../ui/ui-actions';
+import { CheckIcon } from '@patternfly/react-icons';
 
 interface State {
   gitType: string,
@@ -29,8 +26,8 @@ interface State {
 
 interface Props {
   namespace: {
-    data: Array<any>,
-  }
+    data: Array<any>;
+  };
 }
 
 export class ImportFlowForm extends React.Component<Props, State> {
@@ -43,7 +40,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
       name: '',
       builderImage: '',
       gitTypeError: '',
-      gitRepoUrlError: '',
       applicationNameError: '',
       nameError: '',
       builderImageError: '',
@@ -56,25 +52,25 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
   gitTypes = {
     '': 'please choose Git type',
-    'github': 'GitHub',
-    'gitlab': 'GitLab',
-    'bitbucket': 'Bitbucket',
+    github: 'GitHub',
+    gitlab: 'GitLab',
+    bitbucket: 'Bitbucket',
   };
 
   builderImages = {
     '': 'Please choose builder image',
     '.net': '.Net',
-    'nodejs': 'Node.js',
-    'perl': 'Perl',
-    'php': 'PHP',
-    'python': 'Python',
-    'ruby': 'Ruby',
-    'redhatopenjdk8': 'Red Hat OpenJDK 8',
+    nodejs: 'Node.js',
+    perl: 'Perl',
+    php: 'PHP',
+    python: 'Python',
+    ruby: 'Ruby',
+    redhatopenjdk8: 'Red Hat OpenJDK 8',
   };
 
   handleGitTypeChange = (gitType: string) => {
     this.setState({ gitType });
-  }
+  };
 
   handleGitRepoUrlChange = (event) => {
     this.setState({ gitRepoUrl: event.target.value });
@@ -88,21 +84,32 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleApplicationNameChange = (applicationName: string) => {
     this.setState({ applicationName });
-  }
+  };
 
   handleNameChange = (event) => {
     this.setState({ name: event.target.value });
-  }
+  };
 
   handleBuilderImageChange = (builderImage: string) => {
     this.setState({ builderImage });
+  };
+
+  private _generateRandomString() {
+    const str = Math.random()
+      .toString(16)
+      .substring(2, 7);
+    return str + str;
+  }
+
+  private _lastSegmentUrl() {
+    return this.state.gitRepoUrl.substr(this.state.gitRepoUrl.lastIndexOf('/') + 1);
   }
 
   validateGitRepo = (): void => {
     if (!this.state.gitRepoUrlError && this.detectGitType() !== '') {
       this.setState({ gitType: this.detectGitType() });
     }
-  }
+  };
 
   detectGitType = (): string => {
     if (this.state.gitRepoUrl.includes('github.com')) {
@@ -141,6 +148,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       applicationName,
       name,
       builderImage,
+      gitUrlValidationStatus,
       // gitTypeError,
       gitRepoUrlError,
       applicationNameError,
