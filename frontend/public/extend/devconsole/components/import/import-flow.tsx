@@ -7,7 +7,7 @@ import './import-flow.scss';
 export const ImportFlow: React.FunctionComponent = () => {
 
   return (
-    <div className="odc-import-flow-wrapper">
+    <div>
       <h1>
         Git import
       </h1>
