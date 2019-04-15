@@ -24,10 +24,20 @@ interface State {
   builderImageError: string,
 }
 
+interface NameSpace {
+  metadata: {
+    name: string,
+    selfLink: string,
+    uid: string,
+    resourceVersion: string,
+    creationTimestamp: string,
+  }
+}
+
 interface Props {
   namespace: {
-    data: Array<any>;
-  };
+    data: Array<NameSpace>,
+  }
 }
 
 const initialState: State = {
@@ -152,7 +162,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   }
 
-  handleCancle = (event) => {
+  handleCancel = (event) => {
     event.preventDefault();
     this.setState(initialState);
     history.back();
@@ -255,7 +265,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         </FormGroup>
         <div className="co-m-btn-bar">
           <Button type="submit" bsStyle="primary">Create</Button>
-          <Button type="button" onClick={this.handleCancle}>Cancel</Button>
+          <Button type="button" onClick={this.handleCancel}>Cancel</Button>
         </div>
       </Form>
     );
