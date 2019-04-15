@@ -8,6 +8,12 @@ const ImportPage: React.FunctionComponent = () => (
   <PageSection variant={PageSectionVariants.light}>
     <NamespaceBar />
     <div className="odc-import-page-wrapper">
+      <h1>
+        Git import
+      </h1>
+      <p>
+        Some help text about the section lorem ipsum
+      </p>
       <ImportFlow />
     </div>
   </PageSection>
