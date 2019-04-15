@@ -11,6 +11,7 @@ import {
   Button,
 } from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
+import { getActiveNamespace } from '../../../../ui/ui-actions';
 import './ImportFlowForm.scss';
 
 interface State {
@@ -24,7 +25,6 @@ interface State {
   applicationNameError: string,
   nameError: string,
   builderImageError: string,
-  gitTypeDetected: boolean,
 }
 
 interface Props {
@@ -47,10 +47,13 @@ export class ImportFlowForm extends React.Component<Props, State> {
       applicationNameError: '',
       nameError: '',
       builderImageError: '',
-      gitTypeDetected: false,
     };
   }
 
+  componentDidMount() {
+    const activeNamespace = getActiveNamespace();
+    this.setState({ applicationName: activeNamespace});
+  }
   gitTypes = {
     '': 'please choose Git type',
     'github': 'GitHub',
@@ -75,6 +78,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleGitRepoUrlChange = (event) => {
     this.setState({ gitRepoUrl: event.target.value });
+    const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+    if (!urlRegex.test(event.target.value)) {
+      this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
+    } else {
+      this.setState({ gitRepoUrlError: '' });
+    }
   }
 
   handleApplicationNameChange = (applicationName: string) => {
@@ -90,26 +99,20 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   validateGitRepo = (): void => {
-    const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
-    if (!urlRegex.test(this.state.gitRepoUrl)) {
-      this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
-      this.setState({ gitTypeDetected: false });
-    } else {
-      this.setState({ gitRepoUrlError: '' });
-      this.detectGitType();
+    if (!this.state.gitRepoUrlError && this.detectGitType() !== '') {
+      this.setState({ gitType: this.detectGitType() });
     }
   }
 
-  detectGitType = (): void => {
+  detectGitType = (): string => {
     if (this.state.gitRepoUrl.includes('github.com')) {
-      this.setState({ gitType: 'github', gitTypeDetected: true });
+      return 'github';
     } else if (this.state.gitRepoUrl.includes('bitbucket.org')) {
-      this.setState({ gitType: 'bitbucket', gitTypeDetected: true });
+      return 'bitbucket';
     } else if (this.state.gitRepoUrl.includes('gitlab.com')) {
-      this.setState({ gitType: 'gitlab', gitTypeDetected: true });
-    } else {
-      this.setState({ gitType: '', gitTypeDetected: true });
+      return 'gitlab';
     }
+    return '';
   }
 
   handleSubmit = (event) => {
@@ -143,15 +146,14 @@ export class ImportFlowForm extends React.Component<Props, State> {
       applicationNameError,
       // nameError,
       builderImageError,
-      gitTypeDetected,
     } = this.state;
     const { namespace } = this.props;
     const namespaces = {};
     namespaces[''] = 'Choose project name';
-    namespace.data.forEach(ns => namespaces[ns.metadata.uid] = ns.metadata.name);
+    namespace.data.forEach(ns => namespaces[ns.metadata.name] = ns.metadata.name);
     let gitTypeField;
 
-    if (gitTypeDetected) {
+    if (gitType) {
       gitTypeField = <FormGroup controlId="import-git-type">
         <ControlLabel className="co-required">Git Type</ControlLabel>
         <Dropdown
@@ -164,73 +166,71 @@ export class ImportFlowForm extends React.Component<Props, State> {
     }
 
     return (
-      <div>
-        <Form
-          data-test-id="import-form"
-          onSubmit={this.handleSubmit}
-          className="co-m-pane__body-group co-m-pane__form">
-          <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
-            <ControlLabel className="co-required">Git Repository URL</ControlLabel>
-            <FormControl
-              type="text"
-              required
-              value={gitRepoUrl}
-              onChange={this.handleGitRepoUrlChange}
-              onBlur={this.validateGitRepo}
-              id="import-git-repo-url"
-              data-test-id="import-git-repo-url"
-              name="gitRepoUrl" />
-            <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
-          </FormGroup>
-          { gitTypeField }
-          <FormGroup controlId="import-application-name" className={applicationNameError ? 'has-error' : ''}>
-            <ControlLabel className="co-required">Application Name</ControlLabel>
-            <Dropdown
-              dropDownClassName="dropdown--full-width"
-              items={namespaces}
-              selectedKey={applicationName}
-              title={namespaces[applicationName]}
-              onChange={this.handleApplicationNameChange}
-              autocompleteFilter={this.autocompleteFilter}
-              autocompletePlaceholder={'Select application name'}
-              data-test-id="import-application-name" />
-            <HelpBlock>
-              { applicationNameError ? applicationNameError : 'Some help text with explanation' }
-            </HelpBlock>
-          </FormGroup>
-          <FormGroup controlId="import-name">
-            <ControlLabel className="co-required">Name</ControlLabel>
-            <FormControl
-              value={name}
-              onChange={this.handleNameChange}
-              required
-              type="text"
-              id="import-name"
-              name="name"
-              data-test-id="import-name" />
-            <HelpBlock>
-              Identifies the resources created for this application
-            </HelpBlock>
-          </FormGroup>
-          <FormGroup controlId="import-builder-image" className={builderImageError ? 'has-error' : ''}>
-            <ControlLabel className="co-required">Builder Image</ControlLabel>
-            <Dropdown
-              dropDownClassName="dropdown--full-width"
-              items={this.builderImages}
-              selectedKey={builderImage}
-              title={this.builderImages[builderImage]}
-              onChange={this.handleBuilderImageChange}
-              data-test-id="import-builder-image" />
-            <HelpBlock>
-              { builderImageError ? builderImageError : 'Some help text with explanation' }
-            </HelpBlock>
-          </FormGroup>
-          <div className="co-m-btn-bar">
-            <Button type="submit" bsStyle="primary">Create</Button>
-            <Button type="button">Cancel</Button>
-          </div>
-        </Form>
-      </div>
+      <Form
+        data-test-id="import-form"
+        onSubmit={this.handleSubmit}
+        className="co-m-pane__body-group co-m-pane__form">
+        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
+          <ControlLabel className="co-required">Git Repository URL</ControlLabel>
+          <FormControl
+            type="text"
+            required
+            value={gitRepoUrl}
+            onChange={this.handleGitRepoUrlChange}
+            onBlur={this.validateGitRepo}
+            id="import-git-repo-url"
+            data-test-id="import-git-repo-url"
+            name="gitRepoUrl" />
+          <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
+        </FormGroup>
+        { gitTypeField }
+        <FormGroup controlId="import-application-name" className={applicationNameError ? 'has-error' : ''}>
+          <ControlLabel className="co-required">Application Name</ControlLabel>
+          <Dropdown
+            dropDownClassName="dropdown--full-width"
+            items={namespaces}
+            selectedKey={applicationName}
+            title={namespaces[applicationName]}
+            onChange={this.handleApplicationNameChange}
+            autocompleteFilter={this.autocompleteFilter}
+            autocompletePlaceholder={'Select application name'}
+            data-test-id="import-application-name" />
+          <HelpBlock>
+            { applicationNameError ? applicationNameError : 'Some help text with explanation' }
+          </HelpBlock>
+        </FormGroup>
+        <FormGroup controlId="import-name">
+          <ControlLabel className="co-required">Name</ControlLabel>
+          <FormControl
+            value={name}
+            onChange={this.handleNameChange}
+            required
+            type="text"
+            id="import-name"
+            name="name"
+            data-test-id="import-name" />
+          <HelpBlock>
+            Identifies the resources created for this application
+          </HelpBlock>
+        </FormGroup>
+        <FormGroup controlId="import-builder-image" className={builderImageError ? 'has-error' : ''}>
+          <ControlLabel className="co-required">Builder Image</ControlLabel>
+          <Dropdown
+            dropDownClassName="dropdown--full-width"
+            items={this.builderImages}
+            selectedKey={builderImage}
+            title={this.builderImages[builderImage]}
+            onChange={this.handleBuilderImageChange}
+            data-test-id="import-builder-image" />
+          <HelpBlock>
+            { builderImageError ? builderImageError : 'Some help text with explanation' }
+          </HelpBlock>
+        </FormGroup>
+        <div className="co-m-btn-bar">
+          <Button type="submit" bsStyle="primary">Create</Button>
+          <Button type="button">Cancel</Button>
+        </div>
+      </Form>
     );
   }
 }
