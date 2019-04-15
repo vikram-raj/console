@@ -33,6 +33,19 @@ interface Props {
   }
 }
 
+const initialState: State = {
+  gitType: '',
+  gitRepoUrl: '',
+  applicationName: '',
+  name: '',
+  builderImage: '',
+  gitTypeError: '',
+  gitRepoUrlError: '',
+  applicationNameError: '',
+  nameError: '',
+  builderImageError: '',
+}
+
 export class ImportFlowForm extends React.Component<Props, State> {
   constructor(props) {
     super(props);
@@ -132,6 +145,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   }
 
+  handleCancle = (event) => {
+    event.preventDefault();
+    this.setState(initialState);
+    history.back();
+  }
+
   autocompleteFilter = (text, item) => fuzzy(text, item);
 
   render() {
@@ -228,7 +247,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         </FormGroup>
         <div className="co-m-btn-bar">
           <Button type="submit" bsStyle="primary">Create</Button>
-          <Button type="button">Cancel</Button>
+          <Button type="button" onClick={this.handleCancle}>Cancel</Button>
         </div>
       </Form>
     );
