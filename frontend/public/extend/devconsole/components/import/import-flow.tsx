@@ -7,16 +7,8 @@ import './import-flow.scss';
 export const ImportFlow: React.FunctionComponent = () => {
 
   return (
-    <div className="odc-import-flow-wrapper">
-      <h1>
-        Git import
-      </h1>
-      <p>
-        Some help text about the section lorem ipsum
-      </p>
-      <Firehose resources={[{kind: NamespaceModel.kind, prop: 'namespace', isList: true}]}>
-        <ImportFlowForm />
-      </Firehose>
-    </div>
+    <Firehose resources={[{kind: NamespaceModel.kind, prop: 'namespace', isList: true}]}>
+      <ImportFlowForm />
+    </Firehose>
   );
 };
