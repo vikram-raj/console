@@ -5,6 +5,7 @@ import * as fuzzy from 'fuzzysearch';
 import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
 import { getActiveNamespace } from '../../../../ui/ui-actions';
+import { history } from './../../../../../public/components/utils/router';
 import './ImportFlowForm.scss';
 import { GitSourceModel } from '../../../../models';
 import { k8sCreate } from '../../../../module/k8s';
@@ -51,7 +52,7 @@ const initialState: State = {
   applicationNameError: '',
   nameError: '',
   builderImageError: '',
-}
+};
 
 export class ImportFlowForm extends React.Component<Props, State> {
   constructor(props) {
@@ -165,7 +166,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   handleCancel = (event) => {
     event.preventDefault();
     this.setState(initialState);
-    history.back();
+    history.goBack();
   }
 
   autocompleteFilter = (text, item) => fuzzy(text, item);
