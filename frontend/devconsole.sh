@@ -11,6 +11,6 @@ else
    echo -e "Installing OLM... \n"
    oc create -f https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml
    echo -e "\n Installing DevConsole Operator... \n"
-   oc create -f http://operator-hub-shbose-preview1-stage.b542.starter-us-east-2a.openshiftapps.com/install/devconsole.v0.1.0.yaml
+   oc create -f http://operator-hub-shbose-preview1-stage.b542.starter-us-east-2a.openshiftapps.com/install/devopsconsole.v0.1.0.yaml
 
 fi

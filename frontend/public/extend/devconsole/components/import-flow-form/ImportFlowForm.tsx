@@ -1,90 +1,82 @@
 /* eslint-disable no-undef */
-
 import * as React from 'react';
-
 import { connect } from 'react-redux';
-
 import * as fuzzy from 'fuzzysearch';
-
 import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
-
 import { Dropdown } from './../../../../../public/components/utils';
-
 import { getActiveNamespace } from '../../../../ui/ui-actions';
-
-import './ImportFlowForm.scss';
-
+import { history } from './../../../../../public/components/utils/router';
 import { GitSourceModel } from '../../../../models';
-
 import { k8sCreate, k8sUpdate } from '../../../../module/k8s';
+import './ImportFlowForm.scss';
 
 interface State {
   gitType: string;
-
   gitRepoUrl: string;
-
   applicationName: string;
-
   name: string;
-
   builderImage: string;
-
   gitTypeError: string;
-
   applicationNameError: string;
-
   nameError: string;
-
   builderImageError: string;
-
   gitRepoUrlError: string;
-
   gitSourceName: string;
-
   gitSourceCreated: boolean;
-
   resourceVersion: string;
-
   lastEnteredGitUrl: string;
+}
+
+interface NameSpace {
+  metadata: {
+    name: string;
+    selfLink: string;
+    uid: string;
+    resourceVersion: string;
+    creationTimestamp: string;
+  }
 }
 
 interface Props {
   namespace: {
-    data: Array<any>;
-  };
+    data: Array<NameSpace>,
+  }
 }
+
+const initialState: State = {
+  gitType: '',
+  gitRepoUrl: '',
+  applicationName: '',
+  name: '',
+  builderImage: '',
+  gitTypeError: '',
+  gitRepoUrlError: '',
+  applicationNameError: '',
+  nameError: '',
+  builderImageError: '',
+  gitSourceName: '',
+  gitSourceCreated: false,
+  resourceVersion: '',
+  lastEnteredGitUrl: '',
+};
 
 export class ImportFlowForm extends React.Component<Props, State> {
   constructor(props) {
     super(props);
-
     this.state = {
       gitType: '',
-
       gitRepoUrl: '',
-
       applicationName: '',
-
       name: '',
-
       builderImage: '',
-
       gitTypeError: '',
-
       applicationNameError: '',
-
       nameError: '',
-
       builderImageError: '',
-
       gitRepoUrlError: '',
-
       gitSourceName: '',
-
       gitSourceCreated: false,
-
       resourceVersion: '',
-
       lastEnteredGitUrl: '',
     };
   }
@@ -93,36 +85,25 @@ export class ImportFlowForm extends React.Component<Props, State> {
   componentDidMount() {
     const activeNamespace = getActiveNamespace();
     this.randomString = this._generateRandomString();
-
     this.setState({ applicationName: activeNamespace });
   }
 
   gitTypes = {
     '': 'please choose Git type',
-
-    github: 'GitHub',
-
-    gitlab: 'GitLab',
-
-    bitbucket: 'Bitbucket',
+    'github': 'GitHub',
+    'gitlab': 'GitLab',
+    'bitbucket': 'Bitbucket',
   };
 
   builderImages = {
     '': 'Please choose builder image',
-
     '.net': '.Net',
-
-    nodejs: 'Node.js',
-
-    perl: 'Perl',
-
-    php: 'PHP',
-
-    python: 'Python',
-
-    ruby: 'Ruby',
-
-    redhatopenjdk8: 'Red Hat OpenJDK 8',
+    'nodejs': 'Node.js',
+    'perl': 'Perl',
+    'php': 'PHP',
+    'python': 'Python',
+    'ruby': 'Ruby',
+    'redhatopenjdk8': 'Red Hat OpenJDK 8',
   };
 
   handleGitTypeChange = (gitType: string) => {
@@ -261,28 +242,25 @@ export class ImportFlowForm extends React.Component<Props, State> {
     }
   };
 
+  handleCancel = (event) => {
+    event.preventDefault();
+    this.setState(initialState);
+    history.goBack();
+  };
+
   autocompleteFilter = (text, item) => fuzzy(text, item);
 
   render() {
     const {
       gitType,
-
       gitRepoUrl,
-
       applicationName,
-
       name,
-
       builderImage,
-
       // gitTypeError,
-
       gitRepoUrlError,
-
       applicationNameError,
-
       // nameError,
-
       builderImageError,
     } = this.state;
 
@@ -399,8 +377,9 @@ export class ImportFlowForm extends React.Component<Props, State> {
           <Button type="submit" bsStyle="primary">
             Create
           </Button>
-
-          <Button type="button">Cancel</Button>
+          <Button type="button" onClick={this.handleCancel}>
+            Cancel
+          </Button>
         </div>
       </Form>
     );
