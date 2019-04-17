@@ -171,6 +171,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleCancel = (event) => {
     event.preventDefault();
+    if (this.state.gitSourceCreated){
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+    }
+
     this.setState(initialState);
     history.goBack();
   }
