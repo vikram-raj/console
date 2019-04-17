@@ -119,6 +119,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleGitTypeChange = (gitType: string) => {
     this.setState({ gitType });
+    if (gitType !== '') {
+      this.setState({ gitTypeError: '' });
+    } else {
+      this.setState({ gitTypeError: 'Please choose git type' });
+    }
   }
 
   handleGitRepoUrlChange = (event) => {
@@ -130,6 +135,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
         if (!urlRegex.test(this.state.gitRepoUrl)) {
           this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
+          this.setState({ gitType: '' });
         } else {
           this.setState({ gitRepoUrlError: '' });
         }
@@ -217,13 +223,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
             }),
         );
       }
-      if (this.state.gitSourceCreated && this.detectGitType() !== '') {
-        this.setState({ gitType: this.detectGitType() });
-      }
+      this.setState({ gitType: this.detectGitType() });
     }
   }
 
   detectGitType = (): string => {
+    this.setState({ gitTypeError: '' });
     if (this.state.gitRepoUrl.includes('github.com')) {
       return 'github';
     } else if (this.state.gitRepoUrl.includes('bitbucket.org')) {
@@ -231,6 +236,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     } else if (this.state.gitRepoUrl.includes('gitlab.com')) {
       return 'gitlab';
     }
+    this.setState({ gitTypeError: 'Not able to detect the git type. Please choose git type' });
     return '';
   }
 
@@ -252,9 +258,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleCancel = (event) => {
     event.preventDefault();
-    if (this.state.gitSourceCreated) {
-      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
-    }
     this.setState(initialState);
     history.goBack();
   }
@@ -268,7 +271,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       applicationName,
       name,
       builderImage,
-      // gitTypeError,
+      gitTypeError,
       gitRepoUrlError,
       applicationNameError,
       // nameError,
@@ -279,9 +282,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
     namespaces[''] = 'Choose project name';
     namespace.data.forEach(ns => namespaces[ns.metadata.name] = ns.metadata.name);
     let gitTypeField;
-
-    if (gitType) {
-      gitTypeField = <FormGroup controlId="import-git-type">
+    if (gitType || gitTypeError) {
+      gitTypeField = <FormGroup controlId="import-git-type" className={gitTypeError ? 'has-error' : ''}>
         <ControlLabel className="co-required">Git Type</ControlLabel>
         <Dropdown
           dropDownClassName="dropdown--full-width"
@@ -289,6 +291,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
           selectedKey={gitType}
           title={this.gitTypes[gitType]}
           onChange={this.handleGitTypeChange} />
+        <HelpBlock>{ gitTypeError }</HelpBlock>
       </FormGroup>;
     }
 
