@@ -101,13 +101,19 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleGitRepoUrlChange = (event) => {
+    let timeOut;
     this.setState({ gitRepoUrl: event.target.value });
-    const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
-    if (!urlRegex.test(event.target.value)) {
-      this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
-    } else {
-      this.setState({ gitRepoUrlError: '' });
-    }
+    clearTimeout(timeOut);
+    timeOut = setTimeout(() => {
+      if (this.state.gitRepoUrl.length % 3 === 0) {
+        const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+        if (!urlRegex.test(this.state.gitRepoUrl)) {
+          this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
+        } else {
+          this.setState({ gitRepoUrlError: '' });
+        }
+      }
+    }, 2000);
   }
 
   handleApplicationNameChange = (applicationName: string) => {
