@@ -222,10 +222,9 @@ export class ImportFlowForm extends React.Component<Props, State> {
               gitRepoUrlError: err.message,
             }),
         );
+       this.setState({ gitType: this.detectGitType() });
       }
-      this.setState({ gitType: this.detectGitType() });
     }
-  }
 
   detectGitType = (): string => {
     this.setState({ gitTypeError: '' });
