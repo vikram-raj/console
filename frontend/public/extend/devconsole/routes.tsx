@@ -5,7 +5,7 @@ import { AsyncComponent } from '../../components/utils';
 
 const routes: RouteProps[] = [
   {
-    path: '/dev/add',
+    path: '/dev/k8s/ns/:ns/add',
     // eslint-disable-next-line react/display-name
     render: (props) => (
       <AsyncComponent

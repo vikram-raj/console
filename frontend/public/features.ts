@@ -198,9 +198,9 @@ const devopsConsolePath = `${k8sBasePath}/apis/devconsole.openshift.io`;
 const detectDevConsole = dispatch => {
   coFetchJSON(devopsConsolePath)
     .then(res => setFlag(dispatch, FLAGS.SHOW_DEV_CONSOLE, true),
-    err => _.get(err, 'response.status') === 404
-      ? setFlag(dispatch, FLAGS.SHOW_DEV_CONSOLE, false)
-      : handleError(err, FLAGS.SHOW_DEV_CONSOLE, dispatch, detectDevConsole)
+      err => _.get(err, 'response.status') === 404
+        ? setFlag(dispatch, FLAGS.SHOW_DEV_CONSOLE, false)
+        : handleError(err, FLAGS.SHOW_DEV_CONSOLE, dispatch, detectDevConsole)
     );
 };
 

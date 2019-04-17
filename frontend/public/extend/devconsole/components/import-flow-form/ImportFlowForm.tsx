@@ -7,7 +7,7 @@ import { Dropdown } from './../../../../../public/components/utils';
 import { getActiveNamespace } from '../../../../ui/ui-actions';
 import { history } from './../../../../../public/components/utils/router';
 import { GitSourceModel } from '../../../../models';
-import { k8sCreate, k8sUpdate } from '../../../../module/k8s';
+import { k8sCreate, k8sUpdate, k8sKill } from '../../../../module/k8s';
 import './ImportFlowForm.scss';
 
 interface State {
@@ -86,6 +86,17 @@ export class ImportFlowForm extends React.Component<Props, State> {
     const activeNamespace = getActiveNamespace();
     this.randomString = this._generateRandomString();
     this.setState({ applicationName: activeNamespace });
+  }
+
+  //Fix me when Create button functionality is in
+  componentWillUnmount() {
+    if (this.state.gitSourceCreated){
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {}).then(() => {
+        this.setState({
+          gitSourceCreated: false,
+        });
+      });
+    }
   }
 
   gitTypes = {
@@ -244,6 +255,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleCancel = (event) => {
     event.preventDefault();
+    if (this.state.gitSourceCreated){
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+    }
+
     this.setState(initialState);
     history.goBack();
   };
