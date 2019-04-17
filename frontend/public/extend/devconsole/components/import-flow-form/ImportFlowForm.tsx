@@ -11,29 +11,29 @@ import { k8sCreate, k8sUpdate, k8sKill } from '../../../../module/k8s';
 import './ImportFlowForm.scss';
 
 interface State {
-  gitType: string;
-  gitRepoUrl: string;
-  applicationName: string;
-  name: string;
-  builderImage: string;
-  gitTypeError: string;
-  applicationNameError: string;
-  nameError: string;
-  builderImageError: string;
-  gitRepoUrlError: string;
-  gitSourceName: string;
-  gitSourceCreated: boolean;
-  resourceVersion: string;
-  lastEnteredGitUrl: string;
+  gitType: string,
+  gitRepoUrl: string,
+  applicationName: string,
+  name: string,
+  builderImage: string,
+  gitTypeError: string,
+  applicationNameError: string,
+  nameError: string,
+  builderImageError: string,
+  gitRepoUrlError: string,
+  gitSourceName: string,
+  gitSourceCreated: boolean,
+  resourceVersion: string,
+  lastEnteredGitUrl: string,
 }
 
 interface NameSpace {
   metadata: {
-    name: string;
-    selfLink: string;
-    uid: string;
-    resourceVersion: string;
-    creationTimestamp: string;
+    name: string,
+    selfLink: string,
+    uid: string,
+    resourceVersion: string,
+    creationTimestamp: string,
   }
 }
 
@@ -90,7 +90,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   //Fix me when Create button functionality is in
   componentWillUnmount() {
-    if (this.state.gitSourceCreated){
+    if (this.state.gitSourceCreated) {
       k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {}).then(() => {
         this.setState({
           gitSourceCreated: false,
@@ -119,7 +119,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleGitTypeChange = (gitType: string) => {
     this.setState({ gitType });
-  };
+  }
 
   handleGitRepoUrlChange = (event) => {
     let timeOut;
@@ -139,15 +139,15 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleApplicationNameChange = (applicationName: string) => {
     this.setState({ applicationName });
-  };
+  }
 
   handleNameChange = (event) => {
     this.setState({ name: event.target.value });
-  };
+  }
 
   handleBuilderImageChange = (builderImage: string) => {
     this.setState({ builderImage });
-  };
+  }
 
   private _generateRandomString() {
     const str = Math.random()
@@ -221,7 +221,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         this.setState({ gitType: this.detectGitType() });
       }
     }
-  };
+  }
 
   detectGitType = (): string => {
     if (this.state.gitRepoUrl.includes('github.com')) {
@@ -231,15 +231,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
     } else if (this.state.gitRepoUrl.includes('gitlab.com')) {
       return 'gitlab';
     }
-
     return '';
-  };
+  }
 
   handleSubmit = (event) => {
     event.preventDefault();
-
     // const form = event.currentTarget;
-
     if (this.state.applicationName === '') {
       this.setState({ applicationNameError: 'Please select the application name' });
     } else {
@@ -251,17 +248,16 @@ export class ImportFlowForm extends React.Component<Props, State> {
     } else {
       this.setState({ builderImageError: '' });
     }
-  };
+  }
 
   handleCancel = (event) => {
     event.preventDefault();
-    if (this.state.gitSourceCreated){
+    if (this.state.gitSourceCreated) {
       k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
     }
-
     this.setState(initialState);
     history.goBack();
-  };
+  }
 
   autocompleteFilter = (text, item) => fuzzy(text, item);
 
@@ -278,42 +274,31 @@ export class ImportFlowForm extends React.Component<Props, State> {
       // nameError,
       builderImageError,
     } = this.state;
-
     const { namespace } = this.props;
-
     const namespaces = {};
-
     namespaces[''] = 'Choose project name';
-
-    namespace.data.forEach((ns) => (namespaces[ns.metadata.name] = ns.metadata.name));
-
+    namespace.data.forEach(ns => namespaces[ns.metadata.name] = ns.metadata.name);
     let gitTypeField;
 
     if (gitType) {
-      gitTypeField = (
-        <FormGroup controlId="import-git-type">
-          <ControlLabel className="co-required">Git Type</ControlLabel>
-
-          <Dropdown
-            dropDownClassName="dropdown--full-width"
-            items={this.gitTypes}
-            selectedKey={gitType}
-            title={this.gitTypes[gitType]}
-            onChange={this.handleGitTypeChange}
-          />
-        </FormGroup>
-      );
+      gitTypeField = <FormGroup controlId="import-git-type">
+        <ControlLabel className="co-required">Git Type</ControlLabel>
+        <Dropdown
+          dropDownClassName="dropdown--full-width"
+          items={this.gitTypes}
+          selectedKey={gitType}
+          title={this.gitTypes[gitType]}
+          onChange={this.handleGitTypeChange} />
+      </FormGroup>;
     }
 
     return (
       <Form
         data-test-id="import-form"
         onSubmit={this.handleSubmit}
-        className="co-m-pane__body-group co-m-pane__form"
-      >
+        className="co-m-pane__body-group co-m-pane__form">
         <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Git Repository URL</ControlLabel>
-
           <FormControl
             type="text"
             required
@@ -322,20 +307,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
             onBlur={this.validateGitRepo}
             id="import-git-repo-url"
             data-test-id="import-git-repo-url"
-            name="gitRepoUrl"
-          />
-
-          <HelpBlock>{gitRepoUrlError ? gitRepoUrlError : 'Some helper text'}</HelpBlock>
+            name="gitRepoUrl" />
+          <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
         </FormGroup>
-
-        {gitTypeField}
-
-        <FormGroup
-          controlId="import-application-name"
-          className={applicationNameError ? 'has-error' : ''}
-        >
+        { gitTypeField }
+        <FormGroup controlId="import-application-name" className={applicationNameError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Application Name</ControlLabel>
-
           <Dropdown
             dropDownClassName="dropdown--full-width"
             items={namespaces}
@@ -344,17 +321,13 @@ export class ImportFlowForm extends React.Component<Props, State> {
             onChange={this.handleApplicationNameChange}
             autocompleteFilter={this.autocompleteFilter}
             autocompletePlaceholder={'Select application name'}
-            data-test-id="import-application-name"
-          />
-
+            data-test-id="import-application-name" />
           <HelpBlock>
-            {applicationNameError ? applicationNameError : 'Some help text with explanation'}
+            { applicationNameError ? applicationNameError : 'Some help text with explanation' }
           </HelpBlock>
         </FormGroup>
-
         <FormGroup controlId="import-name">
           <ControlLabel className="co-required">Name</ControlLabel>
-
           <FormControl
             value={name}
             onChange={this.handleNameChange}
@@ -362,39 +335,27 @@ export class ImportFlowForm extends React.Component<Props, State> {
             type="text"
             id="import-name"
             name="name"
-            data-test-id="import-name"
-          />
-
-          <HelpBlock>Identifies the resources created for this application</HelpBlock>
+            data-test-id="import-name" />
+          <HelpBlock>
+            Identifies the resources created for this application
+          </HelpBlock>
         </FormGroup>
-
-        <FormGroup
-          controlId="import-builder-image"
-          className={builderImageError ? 'has-error' : ''}
-        >
+        <FormGroup controlId="import-builder-image" className={builderImageError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Builder Image</ControlLabel>
-
           <Dropdown
             dropDownClassName="dropdown--full-width"
             items={this.builderImages}
             selectedKey={builderImage}
             title={this.builderImages[builderImage]}
             onChange={this.handleBuilderImageChange}
-            data-test-id="import-builder-image"
-          />
-
+            data-test-id="import-builder-image" />
           <HelpBlock>
-            {builderImageError ? builderImageError : 'Some help text with explanation'}
+            { builderImageError ? builderImageError : 'Some help text with explanation' }
           </HelpBlock>
         </FormGroup>
-
         <div className="co-m-btn-bar">
-          <Button type="submit" bsStyle="primary">
-            Create
-          </Button>
-          <Button type="button" onClick={this.handleCancel}>
-            Cancel
-          </Button>
+          <Button type="submit" bsStyle="primary">Create</Button>
+          <Button type="button" onClick={this.handleCancel}>Cancel</Button>
         </div>
       </Form>
     );
@@ -406,5 +367,4 @@ const mapStateToProps = (state) => {
     namspace: state.k8s.projects,
   };
 };
-
 export default connect(mapStateToProps)(ImportFlowForm);
