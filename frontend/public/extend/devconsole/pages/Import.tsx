@@ -1,15 +1,17 @@
 import * as React from 'react';
+import { Helmet } from 'react-helmet';
 import { PageSection, PageSectionVariants } from '@patternfly/react-core';
-import { NamespaceBar } from './../../../../public/components/namespace';
 import { ImportFlow } from './../components/import/import-flow';
 import './import.scss';
 
 const ImportPage: React.FunctionComponent = () => (
   <PageSection variant={PageSectionVariants.light}>
-    <NamespaceBar />
+    <Helmet>
+      <title>Import from git</title>
+    </Helmet>
     <div className="odc-import-page-wrapper">
       <h1>
-        Git import
+        Git Import
       </h1>
       <p>
         Some help text about the section lorem ipsum
