@@ -70,6 +70,14 @@ export class ImportFlowForm extends React.Component<Props, State> {
     };
   }
 
+  // handles cases where user reloads the form/closes the browser
+  private _onBrowserClose = event => {
+    event.preventDefault();
+    if (this.state.gitSourceCreated) {
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+    }
+  }
+
   componentDidMount() {
     const activeNamespace = getActiveNamespace();
     this.setState({ applicationName: activeNamespace});
