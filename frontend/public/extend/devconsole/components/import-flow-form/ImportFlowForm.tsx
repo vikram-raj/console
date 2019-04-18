@@ -82,20 +82,28 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
   private randomString = '';
 
+  // handles cases where user reloads the form/closes the browser
+  private _onBrowserClose = event => {
+    event.preventDefault();
+    if (this.state.gitSourceCreated) {
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+    }
+  }
+
   componentDidMount() {
     const activeNamespace = getActiveNamespace();
     this.randomString = this._generateRandomString();
+    window.addEventListener('beforeunload', this._onBrowserClose);
     this.setState({ applicationName: activeNamespace });
   }
 
   //Fix me when Create button functionality is in
   componentWillUnmount() {
+    window.removeEventListener('beforeunload', this._onBrowserClose);
+
+    // handles case where user goes to a different route
     if (this.state.gitSourceCreated) {
-      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {}).then(() => {
-        this.setState({
-          gitSourceCreated: false,
-        });
-      });
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
     }
   }
 
@@ -194,7 +202,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
           (err) =>
             this.setState({
-              gitSourceCreated: false,
               gitRepoUrlError: err.message,
             }),
         );
@@ -221,10 +228,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
               gitSourceCreated: false,
               gitRepoUrlError: err.message,
             }),
-          );
-        }
-       this.setState({ gitType: this.detectGitType() });
-     }
+        );
+      }
+      this.setState({ gitType: this.detectGitType() });
+    }
   }
 
   detectGitType = (): string => {
