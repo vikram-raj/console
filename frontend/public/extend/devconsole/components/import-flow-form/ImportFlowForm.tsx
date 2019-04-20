@@ -247,6 +247,14 @@ export class ImportFlowForm extends React.Component<Props, State> {
     return '';
   }
 
+  disableSubmitButton = ():boolean => {
+    return !this.state.gitRepoUrl ||
+      !this.state.gitType ||
+      !this.state.applicationName ||
+      !this.state.name ||
+      !this.state.builderImage;
+  }
+
   handleSubmit = (event) => {
     event.preventDefault();
     // const form = event.currentTarget;
@@ -261,6 +269,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
     } else {
       this.setState({ builderImageError: '' });
     }
+
+    if(!this.disableSubmitButton()) {
+      // service call for create component goes here
+    }
+
   }
 
   handleCancel = (event) => {
@@ -364,7 +377,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
           </HelpBlock>
         </FormGroup>
         <div className="co-m-btn-bar">
-          <Button type="submit" bsStyle="primary">Create</Button>
+          <Button type="submit" bsStyle="primary" className={ this.disableSubmitButton() ? 'disabled' : '' }>Create</Button>
           <Button type="button" onClick={this.handleCancel}>Cancel</Button>
         </div>
       </Form>
