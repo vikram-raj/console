@@ -138,6 +138,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleGitRepoUrlChange = (event) => {
+    // eslint-disable-next-line prefer-const
     let timeOut;
     this.setState({ gitRepoUrl: event.target.value });
     clearTimeout(timeOut);
@@ -177,12 +178,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
     return this.state.gitRepoUrl.substr(this.state.gitRepoUrl.lastIndexOf('/') + 1);
   }
 
-  private _gitSourceParams(name: string) {
+  private _gitSourceParams(gitSourceName: string) {
     return {
       kind: 'GitSource',
       apiVersion: 'devconsole.openshift.io/v1alpha1',
       metadata: {
-        name: name,
+        name: gitSourceName,
         resourceVersion: this.state.resourceVersion,
       },
       spec: {
@@ -269,7 +270,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         buildType: this.state.builderImage,
         gitSourceRef: this.state.gitSourceName,
         port: 8080,
-        exposed: true
+        exposed: true,
       },
     };
   }
@@ -288,16 +289,16 @@ export class ImportFlowForm extends React.Component<Props, State> {
       this.setState({ builderImageError: '' });
     }
 
-    if(!this.disableSubmitButton()) {
+    if (!this.disableSubmitButton()) {
       GitSourceComponentModel.path = `namespaces/${getActiveNamespace()}/components`;
       k8sCreate(
         GitSourceComponentModel,
         this.catalogParams(),
       )
-      .then(() => {
-        this.setState({ componentCreated: true });
-        history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.namespace}/topolgy`));
-      })
+        .then(() => {
+          this.setState({ componentCreated: true });
+          history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.namespace}/topolgy`));
+        });
     }
   }
 
@@ -393,7 +394,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
           </HelpBlock>
         </FormGroup>
         <div className="co-m-btn-bar">
-          <Button type="submit" bsStyle="primary" className={ this.disableSubmitButton() ? 'disabled' : '' }>Create</Button>
+          <Button type="submit" bsStyle="primary" className={this.disableSubmitButton() ? 'disabled' : ''}>Create</Button>
           <Button type="button" onClick={this.handleCancel}>Cancel</Button>
         </div>
       </Form>
