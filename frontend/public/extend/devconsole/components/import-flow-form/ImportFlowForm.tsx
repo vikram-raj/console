@@ -6,8 +6,9 @@ import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'p
 import { Dropdown } from './../../../../../public/components/utils';
 import { getActiveNamespace } from '../../../../ui/ui-actions';
 import { history } from './../../../../../public/components/utils/router';
-import { GitSourceModel } from '../../../../models';
+import { GitSourceModel, GitSourceComponentModel } from '../../../../models';
 import { k8sCreate, k8sUpdate, k8sKill } from '../../../../module/k8s';
+import { pathWithPerspective } from './../../../../../public/components/utils/perspective';
 import './ImportFlowForm.scss';
 
 interface State {
@@ -25,6 +26,7 @@ interface State {
   gitSourceCreated: boolean,
   resourceVersion: string,
   lastEnteredGitUrl: string,
+  componentCreated: boolean,
 }
 
 interface NameSpace {
@@ -58,6 +60,7 @@ const initialState: State = {
   gitSourceCreated: false,
   resourceVersion: '',
   lastEnteredGitUrl: '',
+  componentCreated: false,
 };
 
 export class ImportFlowForm extends React.Component<Props, State> {
@@ -78,6 +81,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       gitSourceCreated: false,
       resourceVersion: '',
       lastEnteredGitUrl: '',
+      componentCreated: false,
     };
   }
   private randomString = '';
@@ -85,7 +89,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   // handles cases where user reloads the form/closes the browser
   private _onBrowserClose = event => {
     event.preventDefault();
-    if (this.state.gitSourceCreated) {
+    if (this.state.gitSourceCreated && !this.state.componentCreated) {
       k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
     }
   }
@@ -102,7 +106,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     window.removeEventListener('beforeunload', this._onBrowserClose);
 
     // handles case where user goes to a different route
-    if (this.state.gitSourceCreated) {
+    if (this.state.gitSourceCreated && !this.state.componentCreated) {
       k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
     }
   }
@@ -255,9 +259,24 @@ export class ImportFlowForm extends React.Component<Props, State> {
       !this.state.builderImage;
   }
 
+  private catalogParams = () => {
+    return {
+      kind: 'Component',
+      apiVersion: 'devconsole.openshift.io/v1alpha1',
+      metadata: {
+        name: this.state.name,
+      },
+      spec: {
+        buildType: this.state.builderImage,
+        gitSourceRef: this.state.gitSourceName,
+        port: 8080,
+        exposed: true
+      },
+    };
+  }
+
   handleSubmit = (event) => {
     event.preventDefault();
-    // const form = event.currentTarget;
     if (this.state.applicationName === '') {
       this.setState({ applicationNameError: 'Please select the application name' });
     } else {
@@ -271,9 +290,16 @@ export class ImportFlowForm extends React.Component<Props, State> {
     }
 
     if(!this.disableSubmitButton()) {
-      // service call for create component goes here
+      GitSourceComponentModel.path = `namespaces/${getActiveNamespace()}/components`;
+      k8sCreate(
+        GitSourceComponentModel,
+        this.catalogParams(),
+      )
+      .then(() => {
+        this.setState({ componentCreated: true });
+        history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.applicationName}/topolgy`));
+      })
     }
-
   }
 
   handleCancel = (event) => {
