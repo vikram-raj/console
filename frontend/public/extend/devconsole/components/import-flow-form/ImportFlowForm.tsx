@@ -73,7 +73,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   // handles cases where user reloads the form/closes the browser
   private _onBrowserClose = event => {
     event.preventDefault();
-    if (this.state.gitSourceCreated) {
+    if (this.state.gitSourceCreated && !this.state.componentCreated) {
       k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
     }
   }
@@ -171,9 +171,24 @@ export class ImportFlowForm extends React.Component<Props, State> {
       !this.state.builderImage;
   }
 
+  private catalogParams = () => {
+    return {
+      kind: 'Component',
+      apiVersion: 'devconsole.openshift.io/v1alpha1',
+      metadata: {
+        name: this.state.name,
+      },
+      spec: {
+        buildType: this.state.builderImage,
+        gitSourceRef: this.state.gitSourceName,
+        port: 8080,
+        exposed: true
+      },
+    };
+  }
+
   handleSubmit = (event) => {
     event.preventDefault();
-    // const form = event.currentTarget;
     if (this.state.applicationName === '') {
       this.setState({ applicationNameError: 'Please select the application name' });
     } else {
@@ -187,7 +202,15 @@ export class ImportFlowForm extends React.Component<Props, State> {
     }
 
     if(!this.disableSubmitButton()) {
-      // service call for create component goes here
+      GitSourceComponentModel.path = `namespaces/${getActiveNamespace()}/components`;
+      k8sCreate(
+        GitSourceComponentModel,
+        this.catalogParams(),
+      )
+      .then(() => {
+        this.setState({ componentCreated: true });
+        history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.applicationName}/topolgy`));
+      })
     }
 
   }
