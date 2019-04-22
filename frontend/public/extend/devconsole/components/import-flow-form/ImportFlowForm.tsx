@@ -101,7 +101,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
     this.setState({ namespace: activeNamespace });
   }
 
-  //Fix me when Create button functionality is in
   componentWillUnmount() {
     window.removeEventListener('beforeunload', this._onBrowserClose);
 
