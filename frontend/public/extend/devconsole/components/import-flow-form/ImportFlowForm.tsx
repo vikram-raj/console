@@ -2,17 +2,12 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
-import {
-  Form,
-  FormControl,
-  FormGroup,
-  ControlLabel,
-  HelpBlock,
-  Button,
-} from 'patternfly-react';
+import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
 import { Dropdown } from './../../../../../public/components/utils';
 import { getActiveNamespace } from '../../../../ui/ui-actions';
 import { history } from './../../../../../public/components/utils/router';
+import { GitSourceModel } from '../../../../models';
+import { k8sCreate, k8sUpdate, k8sKill } from '../../../../module/k8s';
 import './ImportFlowForm.scss';
 
 interface State {
@@ -22,10 +17,14 @@ interface State {
   name: string,
   builderImage: string,
   gitTypeError: string,
-  gitRepoUrlError: string,
   applicationNameError: string,
   nameError: string,
   builderImageError: string,
+  gitRepoUrlError: string,
+  gitSourceName: string,
+  gitSourceCreated: boolean,
+  resourceVersion: string,
+  lastEnteredGitUrl: string,
 }
 
 interface NameSpace {
@@ -55,6 +54,10 @@ const initialState: State = {
   applicationNameError: '',
   nameError: '',
   builderImageError: '',
+  gitSourceName: '',
+  gitSourceCreated: false,
+  resourceVersion: '',
+  lastEnteredGitUrl: '',
 };
 
 export class ImportFlowForm extends React.Component<Props, State> {
@@ -67,17 +70,43 @@ export class ImportFlowForm extends React.Component<Props, State> {
       name: '',
       builderImage: '',
       gitTypeError: '',
-      gitRepoUrlError: '',
       applicationNameError: '',
       nameError: '',
       builderImageError: '',
+      gitRepoUrlError: '',
+      gitSourceName: '',
+      gitSourceCreated: false,
+      resourceVersion: '',
+      lastEnteredGitUrl: '',
     };
+  }
+  private randomString = '';
+
+  // handles cases where user reloads the form/closes the browser
+  private _onBrowserClose = event => {
+    event.preventDefault();
+    if (this.state.gitSourceCreated) {
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+    }
   }
 
   componentDidMount() {
     const activeNamespace = getActiveNamespace();
-    this.setState({ applicationName: activeNamespace});
+    this.randomString = this._generateRandomString();
+    window.addEventListener('beforeunload', this._onBrowserClose);
+    this.setState({ applicationName: activeNamespace });
   }
+
+  //Fix me when Create button functionality is in
+  componentWillUnmount() {
+    window.removeEventListener('beforeunload', this._onBrowserClose);
+
+    // handles case where user goes to a different route
+    if (this.state.gitSourceCreated) {
+      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+    }
+  }
+
   gitTypes = {
     '': 'please choose Git type',
     'github': 'GitHub',
@@ -134,14 +163,79 @@ export class ImportFlowForm extends React.Component<Props, State> {
     this.setState({ builderImage });
   }
 
+  private _generateRandomString() {
+    const str = Math.random()
+      .toString(16)
+      .substring(2, 7);
+    return str + str;
+  }
+
+  private _lastSegmentUrl() {
+    return this.state.gitRepoUrl.substr(this.state.gitRepoUrl.lastIndexOf('/') + 1);
+  }
+
+  private _gitSourceParams(name: string) {
+    return {
+      kind: 'GitSource',
+      apiVersion: 'devconsole.openshift.io/v1alpha1',
+      metadata: {
+        name: name,
+        resourceVersion: this.state.resourceVersion,
+      },
+      spec: {
+        url: this.state.gitRepoUrl,
+      },
+    };
+  }
+
   validateGitRepo = (): void => {
-    if (!this.state.gitRepoUrlError && this.state.gitRepoUrl !== '') {
+    GitSourceModel.path = `namespaces/${getActiveNamespace()}/gitsources`;
+    if (!this.state.gitRepoUrlError && this.state.lastEnteredGitUrl !== this.state.gitRepoUrl) {
+      if (this.state.gitSourceCreated) {
+        k8sUpdate(GitSourceModel, this._gitSourceParams(this.state.gitSourceName)).then(
+          (res) => {
+            this.setState({
+              resourceVersion: res.metadata.resourceVersion,
+              lastEnteredGitUrl: this.state.gitRepoUrl,
+            });
+          },
+
+          (err) =>
+            this.setState({
+              gitRepoUrlError: err.message,
+            }),
+        );
+      } else {
+        k8sCreate(
+          GitSourceModel,
+          this._gitSourceParams(
+            `${getActiveNamespace()}-${this._lastSegmentUrl()}-${this.randomString}`,
+          ),
+        ).then(
+          (res) => {
+            this.setState({
+              resourceVersion: res.metadata.resourceVersion,
+              gitSourceCreated: true,
+              gitSourceName: `${getActiveNamespace()}-${this._lastSegmentUrl()}-${
+                this.randomString
+              }`,
+              lastEnteredGitUrl: this.state.gitRepoUrl,
+            });
+          },
+
+          (err) =>
+            this.setState({
+              gitSourceCreated: false,
+              gitRepoUrlError: err.message,
+            }),
+        );
+      }
       this.setState({ gitType: this.detectGitType() });
     }
   }
 
   detectGitType = (): string => {
-    this.setState({ gitTypeError: '' })
+    this.setState({ gitTypeError: '' });
     if (this.state.gitRepoUrl.includes('github.com')) {
       return 'github';
     } else if (this.state.gitRepoUrl.includes('bitbucket.org')) {
@@ -149,7 +243,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     } else if (this.state.gitRepoUrl.includes('gitlab.com')) {
       return 'gitlab';
     }
-    this.setState({ gitTypeError: 'Not able to detect the git type. Please choose git type' })
+    this.setState({ gitTypeError: 'Not able to detect the git type. Please choose git type' });
     return '';
   }
 
@@ -179,7 +273,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
     if(!this.disableSubmitButton()) {
       // service call for create component goes here
     }
-
   }
 
   handleCancel = (event) => {
@@ -208,9 +301,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
     namespaces[''] = 'Choose project name';
     namespace.data.forEach(ns => namespaces[ns.metadata.name] = ns.metadata.name);
     let gitTypeField;
-
     if (gitType || gitTypeError) {
-      gitTypeField = <FormGroup controlId="import-git-type" className={ gitTypeError ? 'has-error' : ''}>
+      gitTypeField = <FormGroup controlId="import-git-type" className={gitTypeError ? 'has-error' : ''}>
         <ControlLabel className="co-required">Git Type</ControlLabel>
         <Dropdown
           dropDownClassName="dropdown--full-width"
