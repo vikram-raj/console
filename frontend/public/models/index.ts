@@ -52,6 +52,18 @@ export const GitSourceModel: K8sKind = {
   kind: 'GitSource',
 };
 
+export const GitSourceComponentModel: K8sKind = {
+  label: 'Component',
+  labelPlural: 'Components',
+  apiGroup: 'devconsole.openshift.io',
+  apiVersion: 'v1alpha1',
+  path: 'component',
+  plural: 'components',
+  abbr: 'C',
+  namespaced: true,
+  kind: 'Component',
+};
+
 export const PackageManifestModel: K8sKind = {
   kind: 'PackageManifest',
   label: 'PackageManifest',
