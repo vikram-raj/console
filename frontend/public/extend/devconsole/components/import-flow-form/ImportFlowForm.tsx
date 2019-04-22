@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
 import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
-import { Dropdown } from './../../../../../public/components/utils';
+import { Dropdown, NsDropdown } from './../../../../../public/components/utils';
 import { getActiveNamespace } from '../../../../ui/ui-actions';
 import { history } from './../../../../../public/components/utils/router';
 import './ImportFlowForm.scss';
@@ -15,7 +15,7 @@ import { CheckIcon } from '@patternfly/react-icons';
 interface State {
   gitType: string,
   gitRepoUrl: string,
-  applicationName: string,
+  namespace: string,
   name: string,
   builderImage: string,
   gitTypeError: string,
@@ -44,12 +44,12 @@ interface Props {
 const initialState: State = {
   gitType: '',
   gitRepoUrl: '',
-  applicationName: '',
+  namespace: '',
   name: '',
   builderImage: '',
   gitTypeError: '',
   gitRepoUrlError: '',
-  applicationNameError: '',
+  namespaceError: '',
   nameError: '',
   builderImageError: '',
 };
@@ -60,11 +60,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
     this.state = {
       gitType: '',
       gitRepoUrl: '',
-      applicationName: '',
+      namespace: '',
       name: '',
       builderImage: '',
       gitTypeError: '',
-      applicationNameError: '',
+      namespaceError: '',
       nameError: '',
       builderImageError: '',
     };
@@ -166,7 +166,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   disableSubmitButton = ():boolean => {
     return !this.state.gitRepoUrl ||
       !this.state.gitType ||
-      !this.state.applicationName ||
+      !this.state.namespace ||
       !this.state.name ||
       !this.state.builderImage;
   }
@@ -189,10 +189,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   handleSubmit = (event) => {
     event.preventDefault();
-    if (this.state.applicationName === '') {
-      this.setState({ applicationNameError: 'Please select the application name' });
+    if (this.state.namespace === '') {
+      this.setState({ namespaceError: 'Please select the application name' });
     } else {
-      this.setState({ applicationNameError: '' });
+      this.setState({ namespaceError: '' });
     }
 
     if (this.state.builderImage === '') {
@@ -209,7 +209,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       )
       .then(() => {
         this.setState({ componentCreated: true });
-        history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.applicationName}/topolgy`));
+        history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.namespace}/topolgy`));
       })
     }
 
@@ -231,20 +231,16 @@ export class ImportFlowForm extends React.Component<Props, State> {
     const {
       gitType,
       gitRepoUrl,
-      applicationName,
+      namespace,
       name,
       builderImage,
       gitUrlValidationStatus,
       // gitTypeError,
       gitRepoUrlError,
-      applicationNameError,
+      namespaceError,
       // nameError,
       builderImageError,
     } = this.state;
-    const { namespace } = this.props;
-    const namespaces = {};
-    namespaces[''] = 'Choose project name';
-    namespace.data.forEach(ns => namespaces[ns.metadata.name] = ns.metadata.name);
     let gitTypeField;
 
     if (gitType || gitTypeError) {
@@ -279,19 +275,14 @@ export class ImportFlowForm extends React.Component<Props, State> {
           <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
         </FormGroup>
         { gitTypeField }
-        <FormGroup controlId="import-application-name" className={applicationNameError ? 'has-error' : ''}>
-          <ControlLabel className="co-required">Application Name</ControlLabel>
-          <Dropdown
-            dropDownClassName="dropdown--full-width"
-            items={namespaces}
-            selectedKey={applicationName}
-            title={namespaces[applicationName]}
-            onChange={this.handleApplicationNameChange}
-            autocompleteFilter={this.autocompleteFilter}
-            autocompletePlaceholder={'Select application name'}
+        <FormGroup controlId="import-application-name" className={namespaceError ? 'has-error' : ''}>
+          <ControlLabel className="co-required">Namespace</ControlLabel>
+          <NsDropdown
+            selectedKey={namespace}
+            onChange={this.handleNamespaceChange}
             data-test-id="import-application-name" />
           <HelpBlock>
-            { applicationNameError ? applicationNameError : 'Some help text with explanation' }
+            { namespaceError ? namespaceError : 'Some help text with explanation' }
           </HelpBlock>
         </FormGroup>
         <FormGroup controlId="import-name">
