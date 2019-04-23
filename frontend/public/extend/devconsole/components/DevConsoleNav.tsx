@@ -23,7 +23,12 @@ export const PageNav = (props: DevConsoleNavigationProps) => {
   return (
     <Nav aria-label="Nav" onSelect={props.onNavSelect} onToggle={props.onToggle}>
       <NavList>
-        <ResourceNSLink resource="add" name="+Add" isActive={isActive('/add')} />
+        <HrefLink
+          href="/add"
+          name="+Add"
+          activePath="/dev/add"
+          isActive={isActive('/add')}
+        />
         <HrefLink
           href="/topology"
           name="Topology"

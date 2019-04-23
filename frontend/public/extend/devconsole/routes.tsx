@@ -5,7 +5,19 @@ import { AsyncComponent } from '../../components/utils';
 
 const routes: RouteProps[] = [
   {
-    path: '/dev/k8s/ns/:ns/add',
+    path: '/dev/add',
+    // eslint-disable-next-line react/display-name
+    render: (props) => (
+      <AsyncComponent
+        {...props}
+        loader={async() =>
+          (await import('./pages/Import' /* webpackChunkName: "devconsole-import" */)).default
+        }
+      />
+    ),
+  },
+  {
+    path: '/dev/k8s/ns/:ns/git-import',
     // eslint-disable-next-line react/display-name
     render: (props) => (
       <AsyncComponent
