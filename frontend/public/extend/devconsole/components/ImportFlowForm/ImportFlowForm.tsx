@@ -25,7 +25,7 @@ interface State {
   builderImageError: string,
 }
 
-interface NameSpace {
+/* interface NameSpace {
   metadata: {
     name: string,
     selfLink: string,
@@ -33,12 +33,13 @@ interface NameSpace {
     resourceVersion: string,
     creationTimestamp: string,
   }
-}
+} */
 
 interface Props {
-  namespace: {
+  /* namespace: {
     data: Array<NameSpace>,
-  }
+  }, */
+  activeNamespace : string,
 }
 
 const initialState: State = {
@@ -55,7 +56,7 @@ const initialState: State = {
 };
 
 export class ImportFlowForm extends React.Component<Props, State> {
-  constructor(props) {
+  constructor(props : Props) {
     super(props);
     this.state = {
       gitType: '',
@@ -70,11 +71,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
     };
   }
 
-  // handles cases where user reloads the form/closes the browser
-  private _onBrowserClose = event => {
+  private onBrowserClose = event => {
     event.preventDefault();
     if (this.state.gitSourceCreated && !this.state.componentCreated) {
-      k8sKill(GitSourceModel, this._gitSourceParams(this.state.gitSourceName), {}, {});
+      k8sKill(GitSourceModel, this.gitSourceParams(this.state.gitSourceName), {}, {});
     }
   }
 
@@ -113,8 +113,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
       if (this.state.gitRepoUrl.length % 3 === 0) {
         const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
         if (!urlRegex.test(this.state.gitRepoUrl)) {
-          this.setState({ gitRepoUrlError: 'Please enter the valid git URL' });
-          this.setState({ gitType: '' });
+          this.setState({ gitRepoUrlError: 'Please enter the valid git URL',
+            gitType: '' });
         } else {
           this.setState({ gitRepoUrlError: '' });
         }
@@ -134,14 +134,14 @@ export class ImportFlowForm extends React.Component<Props, State> {
     this.setState({ builderImage });
   };
 
-  private _generateRandomString() {
+  private generateRandomString() {
     const str = Math.random()
       .toString(16)
       .substring(2, 7);
     return str + str;
   }
 
-  private _lastSegmentUrl() {
+  private lastSegmentUrl() {
     return this.state.gitRepoUrl.substr(this.state.gitRepoUrl.lastIndexOf('/') + 1);
   }
 
@@ -203,7 +203,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     }
 
     if (!this.disableSubmitButton()) {
-      GitSourceComponentModel.path = `namespaces/${getActiveNamespace()}/components`;
+      GitSourceComponentModel.path = `namespaces/${this.props.activeNamespace}/components`;
       k8sCreate(
         GitSourceComponentModel,
         this.catalogParams(),
@@ -324,7 +324,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
 const mapStateToProps = (state) => {
   return {
-    namspace: state.k8s.projects,
+    // namspace: state.k8s.projects,
+    activeNamespace: state.UI.get('activeNamespace'),
   };
 };
 export default connect(mapStateToProps)(ImportFlowForm);

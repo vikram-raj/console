@@ -1,0 +1,28 @@
+// eslint-disable-next-line no-unused-vars
+import { K8sKind } from '../../../module/k8s';
+
+export const GitSourceModel: K8sKind = {
+  label: 'GitSource',
+  labelPlural: 'GitSources',
+  apiGroup: 'devconsole.openshift.io',
+  crd: true,
+  apiVersion: 'v1alpha1',
+  path: 'gitsource',
+  plural: 'gitsources',
+  abbr: 'GS',
+  namespaced: true,
+  kind: 'GitSource',
+};
+
+export const GitSourceComponentModel: K8sKind = {
+  label: 'Component',
+  labelPlural: 'Components',
+  apiGroup: 'devconsole.openshift.io',
+  crd: true,
+  apiVersion: 'v1alpha1',
+  path: 'component',
+  plural: 'components',
+  abbr: 'C',
+  namespaced: true,
+  kind: 'Component',
+};
