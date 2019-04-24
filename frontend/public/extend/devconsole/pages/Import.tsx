@@ -12,13 +12,8 @@ const ImportPage: React.FunctionComponent = () => (
     <Helmet>
       <title>Import from git</title>
     </Helmet>
+    <PageHeading title="Git Import" />
     <div className="odc-import-page-wrapper">
-      <h1>
-        Git Import
-      </h1>
-      <p>
-        Some help text about the section lorem ipsum
-      </p>
       <ImportFlow />
     </div>
   </PageSection>
