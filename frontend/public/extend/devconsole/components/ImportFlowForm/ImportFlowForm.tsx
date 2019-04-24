@@ -127,8 +127,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
   };
 
   handleNameChange = (event) => {
-    this.setState({ name: event.target.value });
-  };
+    this.setState({ name: event.target.value, nameError: '' });
+  }
 
   handleBuilderImageChange = (builderImage: string) => {
     this.setState({ builderImage });
@@ -211,6 +211,9 @@ export class ImportFlowForm extends React.Component<Props, State> {
         .then(() => {
           this.setState({ componentCreated: true });
           history.push(pathWithPerspective('dev', `/k8s/ns/${this.state.namespace}/topolgy`));
+        },
+        (err) => {
+          this.setState({ nameError: err.message });
         });
     }
 
@@ -239,7 +242,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       // gitTypeError,
       gitRepoUrlError,
       namespaceError,
-      // nameError,
+      nameError,
       builderImageError,
     } = this.state;
     let gitTypeField;
@@ -286,7 +289,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
             { namespaceError ? namespaceError : 'Some help text with explanation' }
           </HelpBlock>
         </FormGroup>
-        <FormGroup controlId="import-name">
+        <FormGroup controlId="import-name" className={nameError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Name</ControlLabel>
           <FormControl
             value={name}
@@ -297,7 +300,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
             name="name"
             data-test-id="import-name" />
           <HelpBlock>
-            Identifies the resources created for this application
+            { nameError ? nameError : 'Identifies the resources created for this application' }
           </HelpBlock>
         </FormGroup>
         <FormGroup controlId="import-builder-image" className={builderImageError ? 'has-error' : ''}>
