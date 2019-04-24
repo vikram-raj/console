@@ -293,7 +293,7 @@ export class Dropdown extends DropdownMixin {
 
   render() {
     const {active, autocompleteText, selectedKey, items, title, bookmarks, keyboardHoverKey, favoriteKey} = this.state;
-    const {autocompleteFilter, autocompletePlaceholder, className, buttonClassName, menuClassName, storageKey, canFavorite, dropDownClassName, titlePrefix, describedBy} = this.props;
+    const {autocompleteFilter, autocompletePlaceholder, canCreate, className, createTitle, buttonClassName, menuClassName, storageKey, canFavorite, dropDownClassName, titlePrefix, describedBy} = this.props;
 
     const spacerBefore = this.props.spacerBefore || new Set();
     const headerBefore = this.props.headerBefore || {};
@@ -348,6 +348,18 @@ export class Dropdown extends DropdownMixin {
                   onClick={e => e.stopPropagation()} />
               </div>
             }
+            { canCreate ? (
+              <React.Fragment>
+                <DropDownRow
+                  className={selectedKey === 'create' ? 'active' : ''}
+                  key={`create-${createTitle}`}
+                  itemKey="create" content={`Create New ${createTitle}`}
+                  onclick={this.onClick} selected={selectedKey === 'create'} hover={selectedKey === 'create'} />
+                <li className="co-namespace-selector__divider">
+                  <div className="dropdown-menu__divider" />
+                </li>
+              </React.Fragment>
+            ) : null}
             { bookMarkRows }
             {_.size(bookMarkRows) ? <li className="co-namespace-selector__divider"><div className="dropdown-menu__divider" /></li> : null}
             {rows}
@@ -362,6 +374,8 @@ Dropdown.propTypes = {
   autocompleteFilter: PropTypes.func,
   autocompletePlaceholder: PropTypes.string,
   canFavorite: PropTypes.bool,
+  canCreate: PropTypes.bool,
+  createTitle: PropTypes.string,
   className: PropTypes.string,
   defaultBookmarks: PropTypes.objectOf(PropTypes.string),
   dropDownClassName: PropTypes.string,

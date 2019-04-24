@@ -15,6 +15,7 @@ import { ButtonBar } from './utils/button-bar';
 import PerspectiveLink from '../extend/devconsole/shared/components/PerspectiveLink';
 import { getActivePerspective } from '../ui/ui-selectors';
 import { pathWithPerspective } from './utils/perspective';
+import AppDropdown from '../extend/devconsole/shared/components/dropdowns/AppDropdown';
 
 const getSampleRepo = tag => _.get(tag, 'annotations.sampleRepo');
 const getSampleRef = tag => _.get(tag, 'annotations.sampleRef');
@@ -425,7 +426,6 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
 
     const tagOptions = {};
     _.each(tags, ({name}) => tagOptions[name] = <ResourceName kind="ImageStreamTag" name={`${imageStream.metadata.name}:${name}`} />);
-
     return <div className="row">
       <div className="col-md-7 col-md-push-5 co-catalog-item-info">
         <ImageStreamInfo imageStream={imageStream} tag={tag} />
@@ -435,6 +435,10 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
           <div className="form-group">
             <label className="control-label co-required" htmlFor="namespace">Namespace</label>
             <NsDropdown selectedKey={this.state.namespace} onChange={this.onNamespaceChange} id="namespace" />
+          </div>
+          <div className="form-group">
+            <label className="control-label co-required" htmlFor="appspace">Application Space</label>
+            <AppDropdown id="appspace" />
           </div>
           <div className="form-group">
             <label className="control-label co-required" htmlFor="tag">Version</label>
