@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Firehose } from '../../../../components/utils';
 import { NamespaceModel } from '../../../../models';
-import ImportFlowForm from '../import-flow-form/ImportFlowForm';
-import './import-flow.scss';
+import ImportFlowForm from '../ImportFlowForm/ImportFlowForm';
+import './ImportFlow.scss';
 
 export const ImportFlow: React.FunctionComponent = () => {
 
