@@ -4,9 +4,7 @@ import { ImportFlowForm } from './../ImportFlowForm';
 
 describe('ImportFlowForm: ', () => {
   const props = {
-    namespace: {
-      data: [],
-    },
+    activeNamespace: 'default',
   };
 
   it('renders', () => {
