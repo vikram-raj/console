@@ -26,3 +26,16 @@ export const GitSourceComponentModel: K8sKind = {
   namespaced: true,
   kind: 'Component',
 };
+
+export const GitSourceAnalysisModel: K8sKind = {
+  label: 'GitSourceAnalysis',
+  labelPlural: 'GitSourceAnalyses',
+  apiGroup: 'devconsole.openshift.io',
+  crd: true,
+  apiVersion: 'v1alpha1',
+  path: 'gitsourceanalysis',
+  plural: 'gitsourceanalyses',
+  abbr: 'GSA',
+  namespaced: true,
+  kind: 'GitSourceAnalysis',
+};
