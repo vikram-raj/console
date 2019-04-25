@@ -77,10 +77,13 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
   private randomString = this.generateRandomString();
   private poller;
+<<<<<<< HEAD
   private imageStreams: { [name: string]: string[] } = {
     '': ['Select builder image', ''],
   };
 
+=======
+>>>>>>> feat(import-flow):read git url status from GS_CR
   private onBrowserClose = event => {
     event.preventDefault();
     if (this.state.gitSourceCreated && !this.state.componentCreated) {
@@ -187,7 +190,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
             }`,
             lastEnteredGitUrl: this.state.gitRepoUrl,
           });
+<<<<<<< HEAD
           this.poller=setInterval(this.checkUrlValidationStatus, 3000);
+=======
+          this.poller=setInterval(this.checkUrlValidationStatus.bind(this), 3000);
+>>>>>>> feat(import-flow):read git url status from GS_CR
 
         },
       );
@@ -279,7 +286,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
     history.goBack();
   }
 
+<<<<<<< HEAD
   checkUrlValidationStatus = () => {
+=======
+  checkUrlValidationStatus() {
+>>>>>>> feat(import-flow):read git url status from GS_CR
     GitSourceModel.path='gitsources';
     k8sGet(GitSourceModel, this.state.gitSourceName, this.props.activeNamespace).then((res) => {
       if (res.status.connection.state === 'ok') {
@@ -291,7 +302,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
     });
   }
 
+<<<<<<< HEAD
   autocompleteFilter = (text, item) => fuzzy(text, item[0]);
+=======
+  autocompleteFilter = (text, item) => fuzzy(text, item);
+>>>>>>> feat(import-flow):read git url status from GS_CR
 
   render() {
     const {
@@ -306,6 +321,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       nameError,
       builderImageError,
     } = this.state;
+<<<<<<< HEAD
 
     const builderImages = _.filter(this.props.resources.imagestreams.data, imagestream => {
       return isBuilder(imagestream);
@@ -317,6 +333,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
       });
     });
 
+=======
+>>>>>>> feat(import-flow):read git url status from GS_CR
     let gitTypeField, showGitValidationStatus;
     if (gitType || gitTypeError) {
       gitTypeField = <FormGroup controlId="import-git-type" className={gitTypeError ? 'has-error' : ''}>
@@ -343,7 +361,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         data-test-id="import-form"
         onSubmit={this.handleSubmit}
         className="co-m-pane__body-group co-m-pane__form">
-        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
+        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error odc-import-form__url-input' : 'odc-import-form__url-input'}>
           <ControlLabel className="co-required">Git Repository URL</ControlLabel>
           {showGitValidationStatus}
           <FormControl
@@ -356,6 +374,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
             data-test-id="import-git-repo-url"
             autoComplete="off"
             name="gitRepoUrl" />
+          {showGitValidationStatus}
           <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
         </FormGroup>
         { gitTypeField }
