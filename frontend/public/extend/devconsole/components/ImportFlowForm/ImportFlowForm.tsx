@@ -3,10 +3,11 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
 import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
-import { Dropdown, NsDropdown } from '../../../../components/utils';
+import { CheckCircleIcon } from '@patternfly/react-icons';
+import { Dropdown, NsDropdown, LoadingInline } from '../../../../components/utils';
 import { history } from '../../../../components/utils/router';
 import { GitSourceModel, GitSourceComponentModel } from '../../models';
-import { k8sCreate, k8sKill } from '../../../../module/k8s';
+import { k8sCreate, k8sKill, k8sGet } from '../../../../module/k8s';
 import { pathWithPerspective } from './../../../../../public/components/utils/perspective';
 import './ImportFlowForm.scss';
 
@@ -25,6 +26,7 @@ interface State {
   gitSourceCreated: boolean,
   lastEnteredGitUrl: string,
   componentCreated: boolean,
+  gitUrlValidationStatus: string,
 }
 
 interface Props {
@@ -46,6 +48,7 @@ const initialState: State = {
   gitSourceCreated: false,
   lastEnteredGitUrl: '',
   componentCreated: false,
+  gitUrlValidationStatus: '',
 };
 
 export class ImportFlowForm extends React.Component<Props, State> {
@@ -66,10 +69,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
       gitSourceCreated: false,
       lastEnteredGitUrl: '',
       componentCreated: false,
+      gitUrlValidationStatus: '',
     };
   }
   private randomString = this.generateRandomString();
-
+  private poller;
   private onBrowserClose = event => {
     event.preventDefault();
     if (this.state.gitSourceCreated && !this.state.componentCreated) {
@@ -88,6 +92,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     if (this.state.gitSourceCreated && !this.state.componentCreated) {
       k8sKill(GitSourceModel, this.gitSourceParams(this.state.gitSourceName), {}, {});
     }
+    clearInterval(this.poller);
   }
 
   gitTypes = {
@@ -166,9 +171,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
 
   validateGitRepo = (): void => {
     GitSourceModel.path = `namespaces/${this.props.activeNamespace}/gitsources`;
-    if (!this.state.gitRepoUrlError && this.state.lastEnteredGitUrl !== this.state.gitRepoUrl) {
+    if ( this.state.lastEnteredGitUrl !== this.state.gitRepoUrl) {
       if (this.state.gitSourceCreated) {
         k8sKill(GitSourceModel, this.gitSourceParams(this.state.gitSourceName), {}, {});
+        this.setState({gitUrlValidationStatus : '', gitRepoUrlError: '', gitSourceCreated: false});
       }
 
       k8sCreate(
@@ -185,13 +191,9 @@ export class ImportFlowForm extends React.Component<Props, State> {
             }`,
             lastEnteredGitUrl: this.state.gitRepoUrl,
           });
-        },
+          this.poller=setInterval(this.checkUrlValidationStatus.bind(this), 3000);
 
-        (err) =>
-          this.setState({
-            gitSourceCreated: false,
-            gitRepoUrlError: err.message,
-          }),
+        },
       );
       this.setState({ gitType: this.detectGitType() });
     }
@@ -215,7 +217,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
       !this.state.gitType ||
       !this.state.namespace ||
       !this.state.name ||
-      !this.state.builderImage;
+      !this.state.builderImage ||
+      this.state.gitUrlValidationStatus !== 'ok';
   }
 
   private catalogParams = () => {
@@ -270,6 +273,18 @@ export class ImportFlowForm extends React.Component<Props, State> {
     history.goBack();
   }
 
+  checkUrlValidationStatus() {
+    GitSourceModel.path='gitsources';
+    k8sGet(GitSourceModel, this.state.gitSourceName, this.props.activeNamespace).then((res) => {
+      if (res.status.connection.state === 'ok') {
+        this.setState({gitUrlValidationStatus : res.status.connection.state, gitRepoUrlError: ''});
+      } else {
+        this.setState({gitUrlValidationStatus : res.status.connection.state, gitRepoUrlError: res.status.connection.reason});
+      }
+      clearInterval(this.poller);
+    });
+  }
+
   autocompleteFilter = (text, item) => fuzzy(text, item);
 
   render() {
@@ -285,7 +300,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       nameError,
       builderImageError,
     } = this.state;
-    let gitTypeField;
+    let gitTypeField, showGitValidationStatus;
     if (gitType || gitTypeError) {
       gitTypeField = <FormGroup controlId="import-git-type" className={gitTypeError ? 'has-error' : ''}>
         <ControlLabel className="co-required">Git Type</ControlLabel>
@@ -299,12 +314,19 @@ export class ImportFlowForm extends React.Component<Props, State> {
       </FormGroup>;
     }
 
+
+    if (this.state.gitSourceCreated && this.state.gitUrlValidationStatus === '') {
+      showGitValidationStatus = <span className="odc-import-form__loader"><LoadingInline /></span>;
+    } else if (this.state.gitUrlValidationStatus === 'ok') {
+      showGitValidationStatus = <CheckCircleIcon className="odc-import-form__success-icon" />;
+    }
+
     return (
       <Form
         data-test-id="import-form"
         onSubmit={this.handleSubmit}
         className="co-m-pane__body-group co-m-pane__form">
-        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
+        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error odc-import-form__url-input' : 'odc-import-form__url-input'}>
           <ControlLabel className="co-required">Git Repository URL</ControlLabel>
           <FormControl
             type="text"
@@ -315,6 +337,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
             id="import-git-repo-url"
             data-test-id="import-git-repo-url"
             name="gitRepoUrl" />
+          {showGitValidationStatus}
           <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
         </FormGroup>
         { gitTypeField }
