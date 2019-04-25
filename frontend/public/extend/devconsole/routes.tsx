@@ -43,6 +43,12 @@ const routes: RouteProps[] = [
     // eslint-disable-next-line react/display-name
     render: () => <Redirect to="/dev/topology" />,
   },
+  {
+    path: '/dev/git-import',
+    exact: true,
+    // eslint-disable-next-line react/display-name
+    render: () => <Redirect to='/dev/git-import/all-namespace' />,
+  },
 ];
 
 export default routes;
