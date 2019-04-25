@@ -293,7 +293,7 @@ export class Dropdown extends DropdownMixin {
 
   render() {
     const {active, autocompleteText, selectedKey, items, title, bookmarks, keyboardHoverKey, favoriteKey} = this.state;
-    const {autocompleteFilter, autocompletePlaceholder, actionItem, className, createKey, createType, buttonClassName, menuClassName, storageKey, canFavorite, dropDownClassName, titlePrefix, describedBy} = this.props;
+    const {autocompleteFilter, autocompletePlaceholder, actionItem, className, buttonClassName, menuClassName, storageKey, canFavorite, dropDownClassName, titlePrefix, describedBy} = this.props;
 
     const spacerBefore = this.props.spacerBefore || new Set();
     const headerBefore = this.props.headerBefore || {};
@@ -384,7 +384,6 @@ Dropdown.propTypes = {
   autocompleteFilter: PropTypes.func,
   autocompletePlaceholder: PropTypes.string,
   canFavorite: PropTypes.bool,
-  canCreate: PropTypes.bool,
   actionItem: PropTypes.objectOf(
     PropTypes.string,
     PropTypes.string

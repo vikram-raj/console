@@ -1,11 +1,10 @@
+/* eslint-disable no-unused-vars, no-undef */
 import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as fuzzy from 'fuzzysearch';
 
 import { Dropdown, ResourceName, LoadingInline } from '../../../../../components/utils';
 import { K8sResourceKind } from '../../../../../module/k8s';
-
-const CREATE_KEY = 'create-label-key';
 
 type FirehoseList = {
   data?: K8sResourceKind[];
@@ -14,25 +13,27 @@ type FirehoseList = {
 
 interface LabelDropdownState {
   items: {};
-  selectedKey: string;
   title: React.ReactNode;
 }
 
 interface LabelDropdownProps {
-  placeholder?: string;
+  actionItem?: {
+    actionTitle: string,
+    actionKey: string,
+  };
   labelSelector: string;
   labelType: string;
   loaded?: boolean;
   loadError?: string;
+  placeholder?: string;
   resources?: FirehoseList[];
-  onCreate?: (arg0: boolean) => void;
-  onChange?: (arg0: string) => void;
+  selectedKey: string,
+  onChange?: (arg0: string, arg1: string) => void;
 }
 
 class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownState> {
   readonly state = {
     items: {},
-    selectedKey: '',
     title: this.props.loaded ? (
       <span className="btn-dropdown__item--placeholder">{this.props.placeholder}</span>
     ) : (
@@ -64,7 +65,7 @@ class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownSta
 
     if (loadError) {
       this.setState({
-        title: <div className="cos-error-title">Error Loading {placeholder}</div>,
+        title: <span className="cos-error-title">Error Loading {placeholder}</span>,
       });
     }
 
@@ -96,21 +97,19 @@ class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownSta
   onChange = (key) => {
     const { name } = _.get(this.state, ['items', key], {});
     const { labelType } = this.props;
+    const { actionKey, actionTitle } = this.props.actionItem;
     let title;
-    if (key === CREATE_KEY) {
-      this.props.onCreate(true);
-      title = <span className="btn-dropdown__item--placeholder">{`Create New ${labelType}`}</span>;
+    if (key === actionKey) {
+      title = <span className="btn-dropdown__item--placeholder">{actionTitle}</span>;
     } else {
-      this.props.onCreate(false);
-      this.props.onChange(name);
       title = <ResourceName kind={labelType} name={name} />;
     }
-    this.setState({ selectedKey: key, title });
+    this.props.onChange(name, key);
+    this.setState({ title });
   };
 
   render() {
     const items = {};
-    const actionItem = { actionTitle: 'Create New Application', actionKey: CREATE_KEY };
     _.keys(this.state.items).forEach((key) => {
       const item = this.state.items[key];
       items[key] = <ResourceName kind={this.props.labelType} name={item.name} />;
@@ -119,10 +118,10 @@ class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownSta
     return (
       <Dropdown
         autocompleteFilter={this.autocompleteFilter}
-        actionItem={actionItem}
+        actionItem={this.props.actionItem}
         items={items}
         onChange={this.onChange}
-        selectedKey={this.state.selectedKey}
+        selectedKey={this.props.selectedKey}
         title={this.state.title}
         autocompletePlaceholder={this.props.placeholder}
         dropDownClassName="dropdown--full-width"

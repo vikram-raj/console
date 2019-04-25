@@ -15,7 +15,6 @@ import { ButtonBar } from './utils/button-bar';
 import PerspectiveLink from '../extend/devconsole/shared/components/PerspectiveLink';
 import { getActivePerspective } from '../ui/ui-selectors';
 import { pathWithPerspective } from './utils/perspective';
-import AppDropdown from '../extend/devconsole/shared/components/dropdowns/AppDropdown';
 
 const getSampleRepo = tag => _.get(tag, 'annotations.sampleRepo');
 const getSampleRef = tag => _.get(tag, 'annotations.sampleRef');
@@ -103,8 +102,6 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
     this.state = {
       tags: [],
       namespace,
-      application: '',
-      showApplicationInput: false,
       selectedTag: '',
       name: '',
       repository: '',
@@ -139,18 +136,6 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
 
   onNamespaceChange = (namespace: string) => {
     this.setState({namespace});
-  }
-
-  onApplicationDropdownChange = (application: string) => {
-    this.setState({ application });
-  }
-
-  onApplicationInputChange: React.ReactEventHandler<HTMLInputElement> = event => {
-    this.setState({application: event.currentTarget.value});
-  }
-
-  onCreateApplication = (showInput: boolean) => {
-    this.setState({application: '', showApplicationInput: showInput});
   }
 
   onTagChange = (selectedTag: any) => {
@@ -197,11 +182,7 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
   }
 
   getLabels() {
-    return {
-      app: this.state.name,
-      'app.kubernetes.io/part-of': this.state.application,
-      'app.kubernetes.io/name': this.state.name,
-    };
+    return { app: this.state.name };
   }
 
   getPodLabels() {
@@ -444,6 +425,7 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
 
     const tagOptions = {};
     _.each(tags, ({name}) => tagOptions[name] = <ResourceName kind="ImageStreamTag" name={`${imageStream.metadata.name}:${name}`} />);
+
     return <div className="row">
       <div className="col-md-7 col-md-push-5 co-catalog-item-info">
         <ImageStreamInfo imageStream={imageStream} tag={tag} />
@@ -454,29 +436,6 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
             <label className="control-label co-required" htmlFor="namespace">Namespace</label>
             <NsDropdown selectedKey={this.state.namespace} onChange={this.onNamespaceChange} id="namespace" />
           </div>
-          <div className="form-group">
-            <label className="control-label co-required" htmlFor="appname">Application Name</label>
-            <AppDropdown
-              activeNamespace={this.state.namespace}
-              canCreate={true}
-              onChange={this.onApplicationDropdownChange}
-              onCreate={this.onCreateApplication} />
-          </div>
-          {this.state.showApplicationInput ? (
-            <div className="form-group">
-              <label className="control-label co-required" htmlFor="name">Application Name</label>
-              <input className="form-control"
-                type="text"
-                onChange={this.onApplicationInputChange}
-                value={this.state.application}
-                id="name"
-                aria-describedby="name-help"
-                required />
-              <div className="help-block" id="name-help">
-                Names the application.
-              </div>
-            </div>
-          ) : null }
           <div className="form-group">
             <label className="control-label co-required" htmlFor="tag">Version</label>
             <Dropdown items={tagOptions} selectedKey={selectedTag} title={tagOptions[selectedTag]} onChange={this.onTagChange} id="tag" />
@@ -567,8 +526,6 @@ export type BuildSourceProps = {
 export type BuildSourceState = {
   tags: any[],
   namespace: string,
-  application: string,
-  showApplicationInput: boolean,
   selectedTag: string,
   name: string,
   repository: string,
