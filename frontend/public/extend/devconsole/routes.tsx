@@ -38,16 +38,40 @@ const routes: RouteProps[] = [
     ),
   },
   {
+    path: '/dev/import/ns/:ns',
+    // eslint-disable-next-line react/display-name
+    render: (props) => (
+      <AsyncComponent
+        {...props}
+        loader={async() =>
+          (await import('./pages/Import' /* webpackChunkName: "devconsole-topology" */)).default
+        }
+      />
+    ),
+  },
+  {
+    path: '/dev/import',
+    exact: true,
+    // eslint-disable-next-line react/display-name
+    render: (props) => <NamespaceRedirect {...props} />,
+  },
+  {
+    path: '/dev/import/all-namespaces',
+    // eslint-disable-next-line react/display-name
+    render: (props) => (
+      <AsyncComponent
+        {...props}
+        loader={async() =>
+          (await import('./pages/Import' /* webpackChunkName: "devconsole-topology" */)).default
+        }
+      />
+    ),
+  },
+  {
     path: '/dev',
     exact: true,
     // eslint-disable-next-line react/display-name
     render: () => <Redirect to="/dev/topology" />,
-  },
-  {
-    path: '/dev/git-import',
-    exact: true,
-    // eslint-disable-next-line react/display-name
-    render: () => <Redirect to='/dev/git-import/all-namespace' />,
   },
 ];
 
