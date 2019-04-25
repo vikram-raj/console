@@ -118,21 +118,14 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   handleGitRepoUrlChange = (event) => {
-    // eslint-disable-next-line prefer-const
-    let timeOut;
     this.setState({ gitRepoUrl: event.target.value });
-    clearTimeout(timeOut);
-    timeOut = setTimeout(() => {
-      if (this.state.gitRepoUrl.length % 3 === 0) {
-        const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
-        if (!urlRegex.test(this.state.gitRepoUrl)) {
-          this.setState({ gitRepoUrlError: 'Please enter the valid git URL',
-            gitType: '' });
-        } else {
-          this.setState({ gitRepoUrlError: '' });
-        }
-      }
-    }, 2000);
+    const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+    if (!urlRegex.test(this.state.gitRepoUrl)) {
+      this.setState({ gitRepoUrlError: 'Please enter the valid git URL',
+        gitType: '' });
+    } else {
+      this.setState({ gitRepoUrlError: '' });
+    }
   }
 
   handleNamespaceChange = (namespace: string) => {
