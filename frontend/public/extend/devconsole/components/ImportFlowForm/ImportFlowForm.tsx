@@ -6,7 +6,7 @@ import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'p
 import { Dropdown, NsDropdown } from '../../../../components/utils';
 import { history } from '../../../../components/utils/router';
 import { GitSourceModel, GitSourceComponentModel } from '../../models';
-import { k8sCreate, k8sUpdate, k8sKill } from '../../../../module/k8s';
+import { k8sCreate, k8sKill } from '../../../../module/k8s';
 import { pathWithPerspective } from './../../../../../public/components/utils/perspective';
 import './ImportFlowForm.scss';
 
@@ -23,7 +23,6 @@ interface State {
   gitRepoUrlError: string,
   gitSourceName: string,
   gitSourceCreated: boolean,
-  resourceVersion: string,
   lastEnteredGitUrl: string,
   componentCreated: boolean,
 }
@@ -45,7 +44,6 @@ const initialState: State = {
   builderImageError: '',
   gitSourceName: '',
   gitSourceCreated: false,
-  resourceVersion: '',
   lastEnteredGitUrl: '',
   componentCreated: false,
 };
@@ -66,7 +64,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
       gitRepoUrlError: '',
       gitSourceName: '',
       gitSourceCreated: false,
-      resourceVersion: '',
       lastEnteredGitUrl: '',
       componentCreated: false,
     };
@@ -167,7 +164,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
       apiVersion: 'devconsole.openshift.io/v1alpha1',
       metadata: {
         name: gitSourceName,
-        resourceVersion: this.state.resourceVersion,
       },
       spec: {
         url: this.state.gitRepoUrl,
@@ -179,44 +175,31 @@ export class ImportFlowForm extends React.Component<Props, State> {
     GitSourceModel.path = `namespaces/${this.props.activeNamespace}/gitsources`;
     if (!this.state.gitRepoUrlError && this.state.lastEnteredGitUrl !== this.state.gitRepoUrl) {
       if (this.state.gitSourceCreated) {
-        k8sUpdate(GitSourceModel, this.gitSourceParams(this.state.gitSourceName)).then(
-          (res) => {
-            this.setState({
-              resourceVersion: res.metadata.resourceVersion,
-              lastEnteredGitUrl: this.state.gitRepoUrl,
-            });
-          },
-
-          (err) =>
-            this.setState({
-              gitRepoUrlError: err.message,
-            }),
-        );
-      } else {
-        k8sCreate(
-          GitSourceModel,
-          this.gitSourceParams(
-            `${this.props.activeNamespace}-${this.lastSegmentUrl()}-${this.randomString}`,
-          ),
-        ).then(
-          (res) => {
-            this.setState({
-              resourceVersion: res.metadata.resourceVersion,
-              gitSourceCreated: true,
-              gitSourceName: `${this.props.activeNamespace}-${this.lastSegmentUrl()}-${
-                this.randomString
-              }`,
-              lastEnteredGitUrl: this.state.gitRepoUrl,
-            });
-          },
-
-          (err) =>
-            this.setState({
-              gitSourceCreated: false,
-              gitRepoUrlError: err.message,
-            }),
-        );
+        k8sKill(GitSourceModel, this.gitSourceParams(this.state.gitSourceName), {}, {});
       }
+
+      k8sCreate(
+        GitSourceModel,
+        this.gitSourceParams(
+          `${this.props.activeNamespace}-${this.lastSegmentUrl()}-${this.randomString}`,
+        ),
+      ).then(
+        () => {
+          this.setState({
+            gitSourceCreated: true,
+            gitSourceName: `${this.props.activeNamespace}-${this.lastSegmentUrl()}-${
+              this.randomString
+            }`,
+            lastEnteredGitUrl: this.state.gitRepoUrl,
+          });
+        },
+
+        (err) =>
+          this.setState({
+            gitSourceCreated: false,
+            gitRepoUrlError: err.message,
+          }),
+      );
       this.setState({ gitType: this.detectGitType() });
     }
   }
