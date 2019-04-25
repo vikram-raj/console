@@ -1,46 +1,56 @@
 import * as React from 'react';
 
 import { Firehose } from '../../../../../components/utils';
-import { getActiveNamespace } from '../../../../../ui/ui-actions';
 import LabelDropdown from './LabelDropdown';
 
-const AppDropdown = (props) => {
-  const activeNamespace = getActiveNamespace();
+interface AppDropdownProps {
+  activeNamespace?: string;
+  canCreate?: boolean;
+  onCreate?: (arg0: boolean) => void;
+  onChange?: (arg0: string) => void;
+}
+
+const AppDropdown: React.FC<AppDropdownProps> = (props) => {
   const resources = [
     {
       isList: true,
-      namespace: activeNamespace,
+      namespace: props.activeNamespace,
       kind: 'DeploymentConfig',
       prop: 'deploymentConfigs',
     },
     {
       isList: true,
-      namespace: activeNamespace,
+      namespace: props.activeNamespace,
       kind: 'BuildConfig',
       prop: 'buildConfigs',
     },
     {
       isList: true,
-      namespace: activeNamespace,
+      namespace: props.activeNamespace,
       kind: 'Service',
       prop: 'services',
     },
     {
       isList: true,
-      namespace: activeNamespace,
+      namespace: props.activeNamespace,
       kind: 'Route',
       prop: 'routes',
     },
     {
       isList: true,
-      namespace: activeNamespace,
+      namespace: props.activeNamespace,
       kind: 'Pod',
       prop: 'pods',
     },
   ];
   return (
     <Firehose resources={resources}>
-      <LabelDropdown {...props} desc="Application Space" placeholder="Application Space" labelKind="Application" labelSelector="app" />
+      <LabelDropdown
+        {...props}
+        placeholder="Application Name"
+        labelType="Application"
+        labelSelector="app.kubernetes.io/part-of"
+      />
     </Firehose>
   );
 };

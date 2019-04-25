@@ -103,6 +103,8 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
     this.state = {
       tags: [],
       namespace,
+      application: '',
+      showApplicationInput: false,
       selectedTag: '',
       name: '',
       repository: '',
@@ -137,6 +139,18 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
 
   onNamespaceChange = (namespace: string) => {
     this.setState({namespace});
+  }
+
+  onApplicationDropdownChange = (application: string) => {
+    this.setState({ application });
+  }
+
+  onApplicationInputChange: React.ReactEventHandler<HTMLInputElement> = event => {
+    this.setState({application: event.currentTarget.value});
+  }
+
+  onCreateApplication = (showInput: boolean) => {
+    this.setState({application: '', showApplicationInput: showInput});
   }
 
   onTagChange = (selectedTag: any) => {
@@ -183,7 +197,11 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
   }
 
   getLabels() {
-    return { app: this.state.name };
+    return {
+      app: this.state.name,
+      'app.kubernetes.io/part-of': this.state.application,
+      'app.kubernetes.io/name': this.state.name,
+    };
   }
 
   getPodLabels() {
@@ -437,9 +455,28 @@ const BuildSource = connect(mapBuildSourceStateToProps)(class BuildSource extend
             <NsDropdown selectedKey={this.state.namespace} onChange={this.onNamespaceChange} id="namespace" />
           </div>
           <div className="form-group">
-            <label className="control-label co-required" htmlFor="appspace">Application Space</label>
-            <AppDropdown id="appspace" />
+            <label className="control-label co-required" htmlFor="appname">Application Name</label>
+            <AppDropdown
+              activeNamespace={this.state.namespace}
+              canCreate={true}
+              onChange={this.onApplicationDropdownChange}
+              onCreate={this.onCreateApplication} />
           </div>
+          {this.state.showApplicationInput ? (
+            <div className="form-group">
+              <label className="control-label co-required" htmlFor="name">Application Name</label>
+              <input className="form-control"
+                type="text"
+                onChange={this.onApplicationInputChange}
+                value={this.state.application}
+                id="name"
+                aria-describedby="name-help"
+                required />
+              <div className="help-block" id="name-help">
+                Names the application.
+              </div>
+            </div>
+          ) : null }
           <div className="form-group">
             <label className="control-label co-required" htmlFor="tag">Version</label>
             <Dropdown items={tagOptions} selectedKey={selectedTag} title={tagOptions[selectedTag]} onChange={this.onTagChange} id="tag" />
@@ -530,6 +567,8 @@ export type BuildSourceProps = {
 export type BuildSourceState = {
   tags: any[],
   namespace: string,
+  application: string,
+  showApplicationInput: boolean,
   selectedTag: string,
   name: string,
   repository: string,
