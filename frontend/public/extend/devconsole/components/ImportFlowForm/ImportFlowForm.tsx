@@ -78,7 +78,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   private randomString = this.generateRandomString();
   private poller;
   private imageStreams: { [name: string]: string[] } = {
-    '': ['Select builder image', '']
+    '': ['Select builder image', ''],
   };
 
   private onBrowserClose = event => {
@@ -103,21 +103,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   gitTypes = {
-    '': 'please choose Git type',
+    '': 'Please choose Git type',
     'github': 'GitHub',
     'gitlab': 'GitLab',
     'bitbucket': 'Bitbucket',
-  };
-
-  builderImages = {
-    '': 'Please choose builder image',
-    '.net': '.Net',
-    'nodejs': 'Node.js',
-    'perl': 'Perl',
-    'php': 'PHP',
-    'python': 'Python',
-    'ruby': 'Ruby',
-    'redhatopenjdk8': 'Red Hat OpenJDK 8',
   };
 
   handleGitTypeChange = (gitType: string) => {
@@ -132,7 +121,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
   handleGitRepoUrlChange = (event) => {
     this.setState({ gitRepoUrl: event.target.value });
     const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
-    if (!urlRegex.test(this.state.gitRepoUrl)) {
+    if (!urlRegex.test(event.target.value)) {
       this.setState({ gitRepoUrlError: 'Please enter the valid git URL',
         gitType: '' });
     } else {
@@ -198,24 +187,28 @@ export class ImportFlowForm extends React.Component<Props, State> {
             }`,
             lastEnteredGitUrl: this.state.gitRepoUrl,
           });
-          this.poller=setInterval(this.checkUrlValidationStatus.bind(this), 3000);
+          this.poller=setInterval(this.checkUrlValidationStatus, 3000);
 
         },
       );
-      this.setState({ gitType: this.detectGitType() });
+      this.setState({ gitTypeError: '' });
+      if (this.detectGitType(this.state.gitRepoUrl) === '') {
+        this.setState({ gitType: this.detectGitType(this.state.gitRepoUrl) });
+        this.setState({ gitTypeError: 'Not able to detect the git type. Please choose git type' });
+      } else {
+        this.setState({ gitType: this.detectGitType(this.state.gitRepoUrl) });
+      }
     }
   }
 
-  detectGitType = (): string => {
-    this.setState({ gitTypeError: '' });
-    if (this.state.gitRepoUrl.includes('github.com')) {
+  detectGitType = (url: string): string => {
+    if (url.includes('github.com')) {
       return 'github';
-    } else if (this.state.gitRepoUrl.includes('bitbucket.org')) {
+    } else if (url.includes('bitbucket.org')) {
       return 'bitbucket';
-    } else if (this.state.gitRepoUrl.includes('gitlab.com')) {
+    } else if (url.includes('gitlab.com')) {
       return 'gitlab';
     }
-    this.setState({ gitTypeError: 'Not able to detect the git type. Please choose git type' });
     return '';
   }
 
@@ -239,7 +232,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
           'app.kubernetes.io/name': this.imageStreams[this.state.builderImage][0],
           'app.kubernetes.io/instance':  this.state.name,
           'app.kubernetes.io/version':   this.imageStreams[this.state.builderImage][1],
-        }
+        },
       },
       spec: {
         buildType: this.imageStreams[this.state.builderImage][0],
@@ -286,7 +279,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     history.goBack();
   }
 
-  checkUrlValidationStatus() {
+  checkUrlValidationStatus = () => {
     GitSourceModel.path='gitsources';
     k8sGet(GitSourceModel, this.state.gitSourceName, this.props.activeNamespace).then((res) => {
       if (res.status.connection.state === 'ok') {
@@ -350,8 +343,9 @@ export class ImportFlowForm extends React.Component<Props, State> {
         data-test-id="import-form"
         onSubmit={this.handleSubmit}
         className="co-m-pane__body-group co-m-pane__form">
-        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error odc-import-form__url-input' : 'odc-import-form__url-input'}>
+        <FormGroup controlId="import-git-repo-url" className={gitRepoUrlError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Git Repository URL</ControlLabel>
+          {showGitValidationStatus}
           <FormControl
             type="text"
             required
@@ -360,8 +354,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
             onBlur={this.validateGitRepo}
             id="import-git-repo-url"
             data-test-id="import-git-repo-url"
+            autoComplete="off"
             name="gitRepoUrl" />
-          {showGitValidationStatus}
           <HelpBlock>{ gitRepoUrlError ? gitRepoUrlError : 'Some helper text' }</HelpBlock>
         </FormGroup>
         { gitTypeField }
@@ -395,7 +389,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
             dropDownClassName="dropdown--full-width"
             items={this.imageStreams}
             selectedKey={builderImage}
-            title={this.props.resources.imagestreams.loaded ? this.imageStreams[builderImage][0]+this.imageStreams[builderImage][1] : <LoadingInline /> }
+            title={this.props.resources.imagestreams.loaded ? this.imageStreams[builderImage][0]+this.imageStreams[builderImage][1] : <LoadingInline />}
             autocompleteFilter={this.autocompleteFilter}
             autocompletePlaceholder={'select builder image'}
             onChange={this.handleBuilderImageChange}

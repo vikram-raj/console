@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Firehose } from '../../../../components/utils';
 import { ImageStreamModel } from '../../../../models';
 import ImportFlowForm from '../ImportFlowForm/ImportFlowForm';
-import './ImportFlow.scss';
 
 export const ImportFlow: React.FunctionComponent = () => {
 
