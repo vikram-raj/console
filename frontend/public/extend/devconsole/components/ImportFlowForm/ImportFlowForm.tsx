@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import * as fuzzy from 'fuzzysearch';
+import * as _ from 'lodash-es';
 import { Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button } from 'patternfly-react';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import { Dropdown, NsDropdown, LoadingInline } from '../../../../components/utils';
@@ -9,6 +10,7 @@ import { history } from '../../../../components/utils/router';
 import { GitSourceModel, GitSourceComponentModel } from '../../models';
 import { k8sCreate, k8sKill, k8sGet } from '../../../../module/k8s';
 import { pathWithPerspective } from './../../../../../public/components/utils/perspective';
+import { isBuilder } from './../../../../../public/components/image-stream';
 import './ImportFlowForm.scss';
 
 interface State {
@@ -31,6 +33,7 @@ interface State {
 
 interface Props {
   activeNamespace : string,
+  resources?: any
 }
 
 const initialState: State = {
@@ -74,6 +77,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
   private randomString = this.generateRandomString();
   private poller;
+  private imageStreams: { [name: string]: string[] } = {
+    '': ['Select builder image', '']
+  };
+
   private onBrowserClose = event => {
     event.preventDefault();
     if (this.state.gitSourceCreated && !this.state.componentCreated) {
@@ -227,9 +234,15 @@ export class ImportFlowForm extends React.Component<Props, State> {
       apiVersion: 'devconsole.openshift.io/v1alpha1',
       metadata: {
         name: this.state.name,
+        labels: {
+          'app.kubernetes.io/part-of':  '',
+          'app.kubernetes.io/name': this.imageStreams[this.state.builderImage][0],
+          'app.kubernetes.io/instance':  this.state.name,
+          'app.kubernetes.io/version':   this.imageStreams[this.state.builderImage][1],
+        }
       },
       spec: {
-        buildType: this.state.builderImage,
+        buildType: this.imageStreams[this.state.builderImage][0],
         gitSourceRef: this.state.gitSourceName,
         port: 8080,
         exposed: true,
@@ -285,7 +298,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
     });
   }
 
-  autocompleteFilter = (text, item) => fuzzy(text, item);
+  autocompleteFilter = (text, item) => fuzzy(text, item[0]);
 
   render() {
     const {
@@ -300,6 +313,17 @@ export class ImportFlowForm extends React.Component<Props, State> {
       nameError,
       builderImageError,
     } = this.state;
+
+    const builderImages = _.filter(this.props.resources.imagestreams.data, imagestream => {
+      return isBuilder(imagestream);
+    });
+
+    builderImages.forEach(image => {
+      image.spec.tags.forEach(tag => {
+        this.imageStreams[tag.annotations['openshift.io/display-name']] = [image.metadata.name, tag.name];
+      });
+    });
+
     let gitTypeField, showGitValidationStatus;
     if (gitType || gitTypeError) {
       gitTypeField = <FormGroup controlId="import-git-type" className={gitTypeError ? 'has-error' : ''}>
@@ -369,9 +393,11 @@ export class ImportFlowForm extends React.Component<Props, State> {
           <ControlLabel className="co-required">Builder Image</ControlLabel>
           <Dropdown
             dropDownClassName="dropdown--full-width"
-            items={this.builderImages}
+            items={this.imageStreams}
             selectedKey={builderImage}
-            title={this.builderImages[builderImage]}
+            title={this.props.resources.imagestreams.loaded ? this.imageStreams[builderImage][0]+this.imageStreams[builderImage][1] : <LoadingInline /> }
+            autocompleteFilter={this.autocompleteFilter}
+            autocompletePlaceholder={'select builder image'}
             onChange={this.handleBuilderImageChange}
             data-test-id="import-builder-image" />
           <HelpBlock>

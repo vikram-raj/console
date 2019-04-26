@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { Firehose } from '../../../../components/utils';
-import { NamespaceModel } from '../../../../models';
+import { ImageStreamModel } from '../../../../models';
 import ImportFlowForm from '../ImportFlowForm/ImportFlowForm';
 import './ImportFlow.scss';
 
 export const ImportFlow: React.FunctionComponent = () => {
 
   return (
-    <Firehose resources={[{kind: NamespaceModel.kind, prop: 'namespace', isList: true}]}>
+    <Firehose resources={[{kind: ImageStreamModel.kind, prop: 'imagestreams', isList: true}]}>
       <ImportFlowForm />
     </Firehose>
   );
