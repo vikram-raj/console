@@ -1,17 +1,10 @@
 .odc-import-form {
-  &__url-input {
-    position: relative;
-  }
   &__success-icon {
-    position: absolute;
-    right: -25px;
-    bottom: 31px;
-    color: green;
-    font-size: 20px;
+    color: var(--pf-global--success-color--200);
+    font-size: 15px;
+    margin-left: 5px;
   }
   &__loader {
-    position: absolute;
-    bottom: 33px;
-    right: -25px;
+    margin-left: 5px;
   }
 }
