@@ -11,7 +11,7 @@ interface AppDropdownProps {
     actionKey: string,
   };
   selectedKey: string,
-  onChange?: (arg0: string, arg1: string) => void;
+  onChange?: (name: string, key: string) => void;
 }
 
 const AppDropdown: React.FC<AppDropdownProps> = (props) => {
@@ -21,31 +21,7 @@ const AppDropdown: React.FC<AppDropdownProps> = (props) => {
       namespace: props.namespace,
       kind: 'DeploymentConfig',
       prop: 'deploymentConfigs',
-    },
-    {
-      isList: true,
-      namespace: props.namespace,
-      kind: 'BuildConfig',
-      prop: 'buildConfigs',
-    },
-    {
-      isList: true,
-      namespace: props.namespace,
-      kind: 'Service',
-      prop: 'services',
-    },
-    {
-      isList: true,
-      namespace: props.namespace,
-      kind: 'Route',
-      prop: 'routes',
-    },
-    {
-      isList: true,
-      namespace: props.namespace,
-      kind: 'Pod',
-      prop: 'pods',
-    },
+    }
   ];
   return (
     <Firehose resources={resources}>

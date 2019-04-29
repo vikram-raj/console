@@ -28,7 +28,7 @@ interface LabelDropdownProps {
   placeholder?: string;
   resources?: FirehoseList[];
   selectedKey: string;
-  onChange?: (arg0: string, arg1: string) => void;
+  onChange?: (name: string, key: string) => void;
 }
 
 class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownState> {

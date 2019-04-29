@@ -9,7 +9,7 @@ interface AppNameSelectorProps {
   namespace?: string;
   application: string;
   selectedKey: string;
-  onChange?: (arg0: string, arg1: string) => void;
+  onChange?: (name: string, key: string) => void;
 }
 
 const AppNameSelector: React.FC<AppNameSelectorProps> = ({
@@ -22,7 +22,7 @@ const AppNameSelector: React.FC<AppNameSelectorProps> = ({
     if (key === CREATE_APPLICATION_KEY) {
       onChange('', key);
     } else {
-      onChange(appName, selectedKey);
+      onChange(appName, key);
     }
   };
 
@@ -52,11 +52,10 @@ const AppNameSelector: React.FC<AppNameSelectorProps> = ({
             type="text"
             onChange={onInputChange}
             value={application}
-            id="app-name"
             aria-describedby="name-help"
             required
           />
-          <HelpBlock>Names the application</HelpBlock>
+          <HelpBlock>Names the application.</HelpBlock>
         </FormGroup>
       ) : null}
     </React.Fragment>

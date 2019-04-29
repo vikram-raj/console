@@ -3,7 +3,7 @@ import Helmet from 'react-helmet';
 import { Firehose } from '../../../components/utils';
 import BuildSource from '../components/source-to-image/SourceToImage';
 
-export const SourceToImagePage = (props) => {
+export const SourceToImagePage: React.FC = () => {
   const title = 'Create Source-to-Image Application';
   const searchParams = new URLSearchParams(location.search);
   const imageStreamName = searchParams.get('imagestream');
@@ -27,7 +27,7 @@ export const SourceToImagePage = (props) => {
       <div className="co-m-pane__body">
         <h1 className="co-m-pane__heading">{title}</h1>
         <Firehose resources={resources}>
-          <BuildSource preselectedNamespace={preselectedNamespace} {...props} />
+          <BuildSource preselectedNamespace={preselectedNamespace}/>
         </Firehose>
       </div>
     </React.Fragment>

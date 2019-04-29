@@ -1,5 +1,4 @@
 /* eslint-disable no-undef, no-unused-vars */
-
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import { connect } from 'react-redux';
@@ -350,10 +349,10 @@ class BuildSource extends React.Component<
   }
 }
 
-export default connect(mapBuildSourceStateToProps)(BuildSource);
+export default connect<BuildSourceStateProps, {}, BuildSourceProps>(mapBuildSourceStateToProps)(BuildSource);
 
 export type BuildSourceProps = {
-  obj: any;
+  obj?: any;
   preselectedNamespace: string;
 };
 
