@@ -18,8 +18,8 @@ interface LabelDropdownState {
 
 interface LabelDropdownProps {
   actionItem?: {
-    actionTitle: string,
-    actionKey: string,
+    actionTitle: string;
+    actionKey: string;
   };
   labelSelector: string;
   labelType: string;
@@ -27,7 +27,7 @@ interface LabelDropdownProps {
   loadError?: string;
   placeholder?: string;
   resources?: FirehoseList[];
-  selectedKey: string,
+  selectedKey: string;
   onChange?: (arg0: string, arg1: string) => void;
 }
 
@@ -55,6 +55,7 @@ class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownSta
   componentWillReceiveProps(nextProps: LabelDropdownProps) {
     const { labelSelector, resources, loaded, loadError, placeholder } = nextProps;
     if (!loaded) {
+      this.setState({ title: <LoadingInline /> });
       return;
     }
     if (!this.props.loaded) {
@@ -74,7 +75,7 @@ class LabelDropdown extends React.Component<LabelDropdownProps, LabelDropdownSta
       _.reduce(
         data,
         (acc, resource) => {
-          if (resource.metadata.labels.hasOwnProperty(labelSelector)) {
+          if (resource.metadata.labels && resource.metadata.labels.hasOwnProperty(labelSelector)) {
             acc[resource.metadata.labels[labelSelector]] = {
               name: resource.metadata.labels[labelSelector],
             };

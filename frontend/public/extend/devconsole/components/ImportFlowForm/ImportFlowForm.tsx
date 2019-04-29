@@ -12,12 +12,15 @@ import { k8sCreate, k8sKill, k8sGet } from '../../../../module/k8s';
 import { pathWithPerspective } from './../../../../../public/components/utils/perspective';
 import { isBuilder } from './../../../../../public/components/image-stream';
 import './ImportFlowForm.scss';
+import AppNameSelector from '../../shared/components/dropdown/AppNameSelector';
 
-interface State {
+export interface State {
   gitType: string,
   gitRepoUrl: string,
   namespace: string,
   name: string,
+  application: string,
+  selectedApplicationKey: string,
   builderImage: string,
   gitTypeError: string,
   namespaceError: string,
@@ -32,7 +35,7 @@ interface State {
   gitUrlValidationStatus: string,
 }
 
-interface Props {
+export interface Props {
   activeNamespace : string,
   resources?: any
 }
@@ -42,6 +45,8 @@ const initialState: State = {
   gitRepoUrl: '',
   namespace: '',
   name: '',
+  application: '',
+  selectedApplicationKey: '',
   builderImage: '',
   gitTypeError: '',
   gitRepoUrlError: '',
@@ -64,6 +69,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
       gitRepoUrl: '',
       namespace: '',
       name: '',
+      application: '',
+      selectedApplicationKey: '',
       builderImage: '',
       gitTypeError: '',
       namespaceError: '',
@@ -143,6 +150,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
     this.setState({ namespace });
   }
 
+  onApplicationChange = (application: string, selectedKey: string) => {
+    this.setState({ application, selectedApplicationKey: selectedKey });
+  };
+
   handleNameChange = (event) => {
     this.setState({ name: event.target.value, nameError: '' });
   }
@@ -171,6 +182,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       apiVersion: 'devconsole.openshift.io/v1alpha1',
       metadata: {
         name: gitSourceName,
+        namespace: this.state.namespace,
       },
       spec: {
         url: this.state.gitRepoUrl,
@@ -184,6 +196,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       apiVersion: 'devconsole.openshift.io/v1alpha1',
       metadata: {
         name: gitSourceAnalysisName,
+        namespace: this.state.namespace,
       },
       spec: {
         gitSourceRef: {
@@ -194,12 +207,10 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   validateGitRepo = (): void => {
-    GitSourceModel.path = `namespaces/${this.props.activeNamespace}/gitsources`;
-    GitSourceAnalysisModel.path = `namespaces/${this.props.activeNamespace}/gitsourceanalyses`;
     if ( this.state.lastEnteredGitUrl !== this.state.gitRepoUrl && this.state.gitRepoUrlError === '') {
       if (this.state.gitSourceCreated) {
-        k8sKill(GitSourceModel, this.gitSourceParams(this.state.gitSourceName), {}, {});
-        k8sKill(GitSourceAnalysisModel, this.gitSourceAnalysisParams(this.state.gitSourceAnalysisName), {}, {});
+        k8sKill(GitSourceModel, this.gitSourceParams(this.state.gitSourceName));
+        k8sKill(GitSourceAnalysisModel, this.gitSourceAnalysisParams(this.state.gitSourceAnalysisName));
         this.setState({gitUrlValidationStatus : '', gitSourceCreated: false, builderImage: '', builderImageError: ''});
       }
 
@@ -257,7 +268,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
       metadata: {
         name: this.state.name,
         labels: {
-          'app.kubernetes.io/part-of':  '',
+          'app.kubernetes.io/part-of':  this.state.application,
           'app.kubernetes.io/name': this.imageStreams[this.state.builderImage][0],
           'app.kubernetes.io/instance':  this.state.name,
           'app.kubernetes.io/version':   this.imageStreams[this.state.builderImage][1],
@@ -309,8 +320,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
   }
 
   checkUrlValidationStatus = () => {
-    GitSourceModel.path='gitsources';
-    GitSourceAnalysisModel.path=`namespaces/${this.props.activeNamespace}/gitsourceanalyses`;
     k8sGet(GitSourceModel, this.state.gitSourceName, this.props.activeNamespace).then((res) => {
       if (res.status.connection.state === 'ok') {
         this.setState({gitUrlValidationStatus : res.status.connection.state, gitRepoUrlError: ''});
@@ -333,7 +342,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
   autocompleteFilter = (text, item) => fuzzy(text, item[0]);
 
   detectBuildTool = () => {
-    GitSourceAnalysisModel.path='gitsourceanalyses';
     k8sGet(GitSourceAnalysisModel, this.state.gitSourceAnalysisName, this.props.activeNamespace).then((res) => {
       if (this.state.builderImage === '') {
         if (!Object.keys(this.imageStreams).includes(`${(res.status.buildEnvStatistics.detectedBuildTypes[0].name).toLowerCase()}latest`)) {
@@ -354,6 +362,8 @@ export class ImportFlowForm extends React.Component<Props, State> {
       gitRepoUrl,
       namespace,
       name,
+      application,
+      selectedApplicationKey,
       builderImage,
       gitTypeError,
       gitRepoUrlError,
@@ -430,6 +440,12 @@ export class ImportFlowForm extends React.Component<Props, State> {
             { namespaceError ? namespaceError : 'Some help text with explanation' }
           </HelpBlock>
         </FormGroup>
+        <AppNameSelector
+          application={application}
+          namespace={namespace}
+          selectedKey={selectedApplicationKey}
+          onChange={this.onApplicationChange}
+        />
         <FormGroup controlId="import-name" className={nameError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Name</ControlLabel>
           <FormControl

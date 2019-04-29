@@ -6,29 +6,28 @@ import { connect } from 'react-redux';
 
 import { LoadingBox, LoadError } from '../../../../components/utils/status-box';
 import { Dropdown, history, MsgBox, NsDropdown, ResourceName } from '../../../../components/utils';
-import {
-  BuildConfigModel,
-  DeploymentConfigModel,
-  ImageStreamModel,
-  ImageStreamTagModel,
-  RouteModel,
-  ServiceModel,
-} from '../../../../models';
-import { ContainerPort, k8sCreate, k8sGet, K8sResourceKind } from '../../../../module/k8s';
+import { ImageStreamTagModel } from '../../../../models';
+import { ContainerPort, k8sGet, K8sResourceKind } from '../../../../module/k8s';
 import { getBuilderTagsSortedByVersion } from '../../../../components/image-stream';
 import { ButtonBar } from '../../../../components/utils/button-bar';
 import PerspectiveLink from '../../shared/components/PerspectiveLink';
 import { getActivePerspective } from '../../../../ui/ui-selectors';
-import AppDropdown from '../../shared/components/dropdown/AppDropdown';
 import { pathWithPerspective } from '../../../../components/utils/perspective';
 import {
   getPorts,
   getSampleRepo,
   getSampleRef,
   getSampleContextDir,
-  makePortName,
 } from '../../utils/imagestream-utils';
 import ImageStreamInfo from './ImageStreamInfo';
+import {
+  createDeploymentConfig,
+  createImageStream,
+  createBuildConfig,
+  createService,
+  createRoute,
+} from '../../utils/create-resource-utils';
+import AppNameSelector from '../../shared/components/dropdown/AppNameSelector';
 
 const mapBuildSourceStateToProps = (state) => {
   return {
@@ -36,12 +35,10 @@ const mapBuildSourceStateToProps = (state) => {
   };
 };
 
-const CREATE_APPLICATION_KEY = 'create-application-key';
-
 class BuildSource extends React.Component<
   BuildSourceStateProps & BuildSourceProps,
   BuildSourceState
-  > {
+> {
   constructor(props) {
     super(props);
 
@@ -51,7 +48,6 @@ class BuildSource extends React.Component<
       namespace,
       application: '',
       selectedApplicationKey: '',
-      showApplicationInput: false,
       selectedTag: '',
       name: '',
       repository: '',
@@ -87,24 +83,8 @@ class BuildSource extends React.Component<
     this.setState({ namespace });
   };
 
-  onApplicationDropdownChange = (application: string, selectedKey: string) => {
-    if (selectedKey === CREATE_APPLICATION_KEY) {
-      this.setState({
-        application: '',
-        showApplicationInput: true,
-        selectedApplicationKey: selectedKey,
-      });
-    } else {
-      this.setState({
-        application,
-        showApplicationInput: false,
-        selectedApplicationKey: selectedKey,
-      });
-    }
-  };
-
-  onApplicationInputChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
-    this.setState({ application: event.currentTarget.value });
+  onApplicationChange = (application: string, selectedKey: string) => {
+    this.setState({ application, selectedApplicationKey: selectedKey });
   };
 
   onTagChange = (selectedTag: any) => {
@@ -157,212 +137,6 @@ class BuildSource extends React.Component<
     );
   };
 
-  getLabels() {
-    const { name, application } = this.state;
-    const {
-      obj: { data: imageStream },
-    } = this.props;
-    return {
-      app: name,
-      'app.kubernetes.io/part-of': application,
-      'app.kubernetes.io/name': imageStream.metadata.name,
-      'app.kubernetes.io/instance': name,
-      'app.kubernetes.io/component': name,
-    };
-  }
-
-  getPodLabels() {
-    const { name } = this.state;
-    return {
-      app: name,
-      deploymentconfig: name,
-    };
-  }
-
-  createImageStream(): Promise<K8sResourceKind> {
-    const { name, namespace } = this.state;
-    const labels = this.getLabels();
-    const imageStream = {
-      apiVersion: 'image.openshift.io/v1',
-      kind: 'ImageStream',
-      metadata: {
-        name,
-        namespace,
-        labels,
-      },
-    };
-
-    return k8sCreate(ImageStreamModel, imageStream);
-  }
-
-  createBuildConfig(): Promise<K8sResourceKind> {
-    const {
-      obj: { data: imageStream },
-    } = this.props;
-    const { name, namespace, repository, ref = 'master', contextDir, selectedTag } = this.state;
-    const labels = this.getLabels();
-    const buildConfig = {
-      apiVersion: 'build.openshift.io/v1',
-      kind: 'BuildConfig',
-      metadata: {
-        name,
-        namespace,
-        labels,
-      },
-      spec: {
-        output: {
-          to: {
-            kind: 'ImageStreamTag',
-            name: `${name}:latest`,
-          },
-        },
-        source: {
-          contextDir,
-          git: {
-            uri: repository,
-            ref,
-            type: 'Git',
-          },
-        },
-        strategy: {
-          type: 'Source',
-          sourceStrategy: {
-            from: {
-              kind: 'ImageStreamTag',
-              name: `${imageStream.metadata.name}:${selectedTag}`,
-              namespace: imageStream.metadata.namespace,
-            },
-          },
-        },
-        triggers: [
-          {
-            type: 'ImageChange',
-            imageChange: {},
-          },
-          {
-            type: 'ConfigChange',
-          },
-        ],
-      },
-    };
-
-    return k8sCreate(BuildConfigModel, buildConfig);
-  }
-
-  createDeploymentConfig(): Promise<K8sResourceKind> {
-    const { name, namespace, ports } = this.state;
-    const labels = this.getLabels();
-    const podLabels = this.getPodLabels();
-    const deploymentConfig = {
-      apiVersion: 'apps.openshift.io/v1',
-      kind: 'DeploymentConfig',
-      metadata: {
-        name,
-        namespace,
-        labels,
-      },
-      spec: {
-        selector: podLabels,
-        replicas: 1,
-        template: {
-          metadata: {
-            labels: podLabels,
-          },
-          spec: {
-            containers: [
-              {
-                name,
-                image: `${name}:latest`,
-                ports,
-                env: [],
-              },
-            ],
-          },
-        },
-        triggers: [
-          {
-            type: 'ImageChange',
-            imageChangeParams: {
-              automatic: true,
-              containerNames: [name],
-              from: {
-                kind: 'ImageStreamTag',
-                name: `${name}:latest`,
-              },
-            },
-          },
-          {
-            type: 'ConfigChange',
-          },
-        ],
-      },
-    };
-
-    return k8sCreate(DeploymentConfigModel, deploymentConfig);
-  }
-
-  createService(): Promise<K8sResourceKind> {
-    const { name, namespace, ports } = this.state;
-    const firstPort = _.head(ports);
-    const labels = this.getLabels();
-    const podLabels = this.getPodLabels();
-    const service = {
-      kind: 'Service',
-      apiVersion: 'v1',
-      metadata: {
-        name,
-        namespace,
-        labels,
-      },
-      spec: {
-        selector: podLabels,
-        ports: [
-          {
-            port: firstPort.containerPort,
-            targetPort: firstPort.containerPort,
-            protocol: firstPort.protocol,
-            // Use the same naming convention as the CLI.
-            name: makePortName(firstPort),
-          },
-        ],
-      },
-    };
-
-    return k8sCreate(ServiceModel, service);
-  }
-
-  createRoute(): Promise<K8sResourceKind> {
-    const { name, namespace, ports } = this.state;
-    const firstPort = _.head(ports);
-    const labels = this.getLabels();
-    const route = {
-      kind: 'Route',
-      apiVersion: 'route.openshift.io/v1',
-      metadata: {
-        name,
-        namespace,
-        labels,
-      },
-      spec: {
-        to: {
-          kind: 'Service',
-          name,
-        },
-        // The service created by `createService` uses the same port as the container port.
-        port: {
-          // Use the port name, not the number for targetPort. The router looks
-          // at endpoints, not services, when resolving ports, so port numbers
-          // will not resolve correctly if the service port and container port
-          // numbers don't match.
-          targetPort: makePortName(firstPort),
-        },
-        wildcardPolicy: 'None',
-      },
-    };
-
-    return k8sCreate(RouteModel, route);
-  }
-
   handleError = (err) => {
     this.setState({
       error: this.state.error ? `${this.state.error}; ${err.message}` : err.message,
@@ -371,24 +145,34 @@ class BuildSource extends React.Component<
 
   save = (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
-    const { activePerspective } = this.props;
-    const { namespace, selectedTag, name, repository, createRoute, ports } = this.state;
+    const {
+      activePerspective,
+      obj: { data: imageStream },
+    } = this.props;
+    const {
+      name,
+      namespace,
+      selectedTag,
+      repository,
+      createRoute: canCreateRoute,
+      ports,
+    } = this.state;
     if (!name || !selectedTag || !namespace || !repository) {
       this.setState({ error: 'Please complete all fields.' });
       return;
     }
 
     const requests = [
-      this.createDeploymentConfig(),
-      this.createImageStream(),
-      this.createBuildConfig(),
+      createDeploymentConfig(this.state, imageStream),
+      createImageStream(this.state, imageStream),
+      createBuildConfig(this.state, imageStream),
     ];
 
     // Only create a service or route if the builder image has ports.
     if (!_.isEmpty(ports)) {
-      requests.push(this.createService());
-      if (createRoute) {
-        requests.push(this.createRoute());
+      requests.push(createService(this.state, imageStream));
+      if (canCreateRoute) {
+        requests.push(createRoute(this.state, imageStream));
       }
     }
 
@@ -461,39 +245,12 @@ class BuildSource extends React.Component<
                 id="namespace"
               />
             </div>
-            <div className="form-group">
-              <label className="control-label co-required" htmlFor="appname">
-                Application
-              </label>
-              <AppDropdown
-                namespace={this.state.namespace}
-                actionItem={{
-                  actionTitle: 'Create New Application',
-                  actionKey: CREATE_APPLICATION_KEY,
-                }}
-                selectedKey={this.state.selectedApplicationKey}
-                onChange={this.onApplicationDropdownChange}
-              />
-            </div>
-            {this.state.showApplicationInput ? (
-              <div className="form-group">
-                <label className="control-label co-required" htmlFor="name">
-                  Application Name
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  onChange={this.onApplicationInputChange}
-                  value={this.state.application}
-                  id="name"
-                  aria-describedby="name-help"
-                  required
-                />
-                <div className="help-block" id="name-help">
-                  Names the application.
-                </div>
-              </div>
-            ) : null}
+            <AppNameSelector
+              namespace={this.state.namespace}
+              application={this.state.application}
+              selectedKey={this.state.selectedApplicationKey}
+              onChange={this.onApplicationChange}
+            />
             <div className="form-group">
               <label className="control-label co-required" htmlFor="tag">
                 Version
@@ -605,7 +362,6 @@ export type BuildSourceState = {
   namespace: string;
   application: string;
   selectedApplicationKey: string;
-  showApplicationInput: boolean;
   selectedTag: string;
   name: string;
   repository: string;
