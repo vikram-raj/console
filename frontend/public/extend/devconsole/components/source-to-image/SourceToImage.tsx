@@ -358,7 +358,7 @@ export type BuildSourceProps = {
 };
 
 export type BuildSourceState = {
-  tags: any[];
+  tags: any;
   namespace: string;
   application: string;
   selectedApplicationKey: string;
@@ -370,7 +370,7 @@ export type BuildSourceState = {
   createRoute: boolean;
   ports: ContainerPort[];
   inProgress: boolean;
-  error?: any;
+  error?: string;
 };
 
 interface BuildSourceStateProps {

@@ -18,11 +18,11 @@ const AppNameSelector: React.FC<AppNameSelectorProps> = ({
   selectedKey,
   onChange,
 }) => {
-  const onDropdownChange = (application: string, selectedKey: string) => {
-    if (selectedKey === CREATE_APPLICATION_KEY) {
-      onChange('', selectedKey);
+  const onDropdownChange = (appName: string, key: string) => {
+    if (key === CREATE_APPLICATION_KEY) {
+      onChange('', key);
     } else {
-      onChange(application, selectedKey);
+      onChange(appName, selectedKey);
     }
   };
 

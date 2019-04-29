@@ -10,7 +10,7 @@ import { getSampleRepo } from '../../utils/imagestream-utils';
 
 export type ImageStreamInfoProps = {
   imageStream: K8sResourceKind;
-  tag: any;
+  tag: object;
 };
 
 const ImageStreamInfo: React.FC<ImageStreamInfoProps> = ({ imageStream, tag }) => {

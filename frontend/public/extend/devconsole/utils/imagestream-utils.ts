@@ -8,7 +8,7 @@ export const getSampleContextDir = (tag) => _.get(tag, 'annotations.sampleContex
 
 // Transform image ports to k8s structure.
 // `{ '3306/tcp': {} }` -> `{ containerPort: 3306, protocol: 'TCP' }`
-const portsFromSpec = (portSpec: any): ContainerPort[] => {
+const portsFromSpec = (portSpec: object): ContainerPort[] => {
   return _.reduce(
     portSpec,
     (result: ContainerPort[], value, key) => {
@@ -34,7 +34,7 @@ const portsFromSpec = (portSpec: any): ContainerPort[] => {
   );
 };
 
-export const getPorts = (imageStreamImage: any): ContainerPort[] => {
+export const getPorts = (imageStreamImage: object): ContainerPort[] => {
   const portSpec =
     _.get(imageStreamImage, 'image.dockerImageMetadata.Config.ExposedPorts') ||
     _.get(imageStreamImage, 'image.dockerImageMetadata.ContainerConfig.ExposedPorts');
