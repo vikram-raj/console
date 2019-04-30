@@ -1,12 +1,6 @@
 import * as React from 'react';
-import { Provider } from 'react-redux';
-import configureMockStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
 import { ImportFlowForm } from './../ImportFlowForm';
-
-const middlewares = [thunk];
-const mockStore = configureMockStore(middlewares);
 
 describe('ImportFlowForm: ', () => {
   const props = {
@@ -108,14 +102,11 @@ describe('ImportFlowForm: ', () => {
     expect(importFlowForm).toBeTruthy();
   });
 
-  xit('update state on Git Repository URL input change', () => {
-    const importFlowForm = mount(
-      <Provider store={mockStore}>
-        <ImportFlowForm {...props} />
-      </Provider>,
-    );
+  it('update state on Git Repository URL input change', () => {
+    const importFlowForm = shallow(<ImportFlowForm {...props} />);
 
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
 
@@ -124,66 +115,87 @@ describe('ImportFlowForm: ', () => {
     );
   });
 
-  xit('detect git type', () => {
-    const importFlowForm = mount(<ImportFlowForm {...props} />);
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('change', {
+  it('detect git type', () => {
+    const importFlowForm = shallow(<ImportFlowForm {...props} />);
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('blur');
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
     expect(importFlowForm.state().gitType).toBe('github');
   });
 
-  xit('validate URL', () => {
-    const importFlowForm = mount(<ImportFlowForm {...props} />);
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('change', {
+  it('validate URL', () => {
+    const importFlowForm = shallow(<ImportFlowForm {...props} />);
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('blur');
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
     expect(importFlowForm.state().gitRepoUrlError).toBe('');
 
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'http://localhost:9000/dev/add' },
     });
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('blur');
-    expect(importFlowForm.state().gitRepoUrlError).toBe('Please enter the valid git URL');
-    expect(importFlowForm.state().gitTypeDetected).toBe(false);
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
+    expect(importFlowForm.state().gitRepoUrlError).toBe('Please enter a valid git URL.');
+    expect(importFlowForm.state().gitTypeDetected).toBe(undefined);
   });
 
-  xit('update state on name input change', () => {
-    const importFlowForm = mount(<ImportFlowForm {...props} />);
+  it('update state on name input change', () => {
+    const importFlowForm = shallow(<ImportFlowForm {...props} />);
 
-    importFlowForm.find('input[data-test-id="import-name"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-name"]')
+      .shallow().find('[data-test-id="import-name"]').simulate('change', {
       target: { value: 'node-app' },
     });
 
     expect(importFlowForm.state().name).toBe('node-app');
   });
 
-  xit('form submission', () => {
-    const importFlowForm = mount(<ImportFlowForm {...props} />);
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('change', {
+  it ('form submission', () => {
+    const preventDefault = jest.fn();
+    const importFlowForm = shallow(<ImportFlowForm {...props} />);
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
-    importFlowForm.find('input[data-test-id="import-git-repo-url"]').simulate('blur');
-    importFlowForm.find('Dropdown[data-test-id="import-application-name"]').simulate('change');
-    importFlowForm.find('input[data-test-id="import-name"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-git-repo-url"]')
+      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
+
+    importFlowForm.find('[data-test-id="import-name"]')
+      .shallow().find('[data-test-id="import-name"]').simulate('change', {
       target: { value: 'node-app' },
     });
-    importFlowForm.find('Dropdown[data-test-id="import-builder-image"]').simulate('change');
-    importFlowForm.find('form[data-test-id="import-form"]').simulate('submit');
-    const importFormState = {
-      gitType: 'github',
+    importFlowForm.find('[data-test-id="import-builder-image"]').simulate('change', 'perl');
+    importFlowForm.find('[data-test-id="import-form"]')
+      .shallow().find('[data-test-id="import-form"]').simulate('submit', {preventDefault});
+    const importFormState =  {
+      application: '',
+      builderImage: 'perl',
+      builderImageError: '',
       gitRepoUrl: 'https://github.com/vikram-raj/console/tree/import-flow',
-      applicationName: '',
-      name: 'node-app',
-      builderImage: '',
-      gitTypeError: '',
       gitRepoUrlError: '',
-      applicationNameError: 'Please select the application name',
+      gitSourceAnalysisName: '',
+      gitSourceName: '',
+      gitType: 'github',
+      gitTypeError: '',
+      gitUrlValidationStatus: '',
+      isBuilderImageDetected: false,
+      isComponentCreated: false,
+      isGitSourceCreated: false,
+      lastEnteredGitUrl: '',
+      name: 'node-app',
       nameError: '',
-      builderImageError: 'Please select the builder image',
-      gitTypeDetected: true,
-    };
+      namespace: 'default',
+      namespaceError: '',
+      selectedApplicationKey: '',
+    }
+
     expect(importFlowForm.state()).toEqual(importFormState);
   });
 });
