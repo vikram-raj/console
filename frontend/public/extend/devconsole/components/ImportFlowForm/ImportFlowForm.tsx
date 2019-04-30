@@ -352,7 +352,6 @@ export class ImportFlowForm extends React.Component<Props, State> {
     const {
       gitType,
       gitRepoUrl,
-      namespace,
       name,
       builderImage,
       gitTypeError,
@@ -362,7 +361,9 @@ export class ImportFlowForm extends React.Component<Props, State> {
       builderImageError,
     } = this.state;
 
-    const builderImages = _.filter(this.props.resources.imagestreams.data, imagestream => {
+    const { activeNamespace, resources } = this.props;
+
+    const builderImages = _.filter(resources.imagestreams.data, imagestream => {
       return isBuilder(imagestream);
     });
 
@@ -423,7 +424,7 @@ export class ImportFlowForm extends React.Component<Props, State> {
         <FormGroup controlId="import-application-name" className={namespaceError ? 'has-error' : ''}>
           <ControlLabel className="co-required">Namespace</ControlLabel>
           <NsDropdown
-            selectedKey={namespace}
+            selectedKey={activeNamespace}
             onChange={this.handleNamespaceChange}
             data-test-id="import-application-name" />
           <HelpBlock>
