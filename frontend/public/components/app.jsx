@@ -8,7 +8,7 @@ import * as PropTypes from 'prop-types';
 
 import store from '../redux';
 import { productName } from '../branding';
-import { ALL_NAMESPACES_KEY, LAST_PERSPECTIVE_LOCAL_STORAGE_KEY } from '../const';
+import { ALL_NAMESPACES_KEY } from '../const';
 import { connectToFlags, featureActions, flagPending, FLAGS } from '../features';
 import { analyticsSvc } from '../module/analytics';
 import { GlobalNotifications } from './global-notifications';
@@ -18,7 +18,7 @@ import { Navigation } from './nav';
 import { SearchPage } from './search';
 import { ResourceDetailsPage, ResourceListPage } from './resource-list';
 import { history, AsyncComponent, Loading } from './utils';
-import { namespacedPrefixes } from './utils/link';
+import { namespacedPrefixes, legalPerspectiveNames } from './utils/link';
 import { UIActions, getActiveNamespace } from '../ui/ui-actions';
 import { getActivePerspective } from '../ui/ui-selectors';
 import { ClusterServiceVersionModel, SubscriptionModel, AlertmanagerModel } from '../models';
@@ -93,17 +93,16 @@ const mapPerspectiveStateToProps = (state) => {
 
 // The default page component lets us connect to flags without connecting the entire App.
 const DefaultPage = connect(mapPerspectiveStateToProps)(
-  connectToFlags(FLAGS.OPENSHIFT)(({ flags, activePerspective }) => {
+  connectToFlags(FLAGS.OPENSHIFT, FLAGS.SHOW_DEV_CONSOLE)(({ flags, activePerspective }) => {
     const openshiftFlag = flags[FLAGS.OPENSHIFT];
-    const lastViewedPerspective = localStorage.getItem(LAST_PERSPECTIVE_LOCAL_STORAGE_KEY);
     if (flagPending(openshiftFlag) || (activePerspective === 'dev' && flagPending(flags[FLAGS.SHOW_DEV_CONSOLE]))) {
       return <Loading />;
     }
 
     if (openshiftFlag) {
       // TODO - We should be using the link utility to create these links with perspective.
-      return lastViewedPerspective && lastViewedPerspective !== 'admin' ? (
-        <Redirect to={`/${lastViewedPerspective}`} />
+      return activePerspective && activePerspective !== 'admin' ? (
+        <Redirect to={`/${activePerspective}`} />
       ) : (
         <Redirect to="/k8s/cluster/projects" />
       );
@@ -190,19 +189,37 @@ class App extends React.PureComponent {
     }
   }
 
+  showAdminNav() {
+    return this.props.activePerspective === 'admin' || (
+      this.props.activePerspective &&
+      legalPerspectiveNames.includes(this.props.activePerspective) &&
+      this.props.flags[PerspectiveFlagMap[this.props.activePerspective]] ===
+        false &&
+      !flagPending(
+        this.props.flags[PerspectiveFlagMap[this.props.activePerspective]]
+      )
+    );
+  }
+
+  showActivePerspectiveNav(perspective) {
+    return (this.props.activePerspective === perspective &&
+    this.props.flags[PerspectiveFlagMap[perspective]] &&
+    !flagPending(this.props.flags[PerspectiveFlagMap[perspective]]));
+  }
+
+
   _sidebarNav() {
-    if (
-      this.props.flags.SHOW_DEV_CONSOLE &&
-      this.props.activePerspective === 'dev'
-    ) {
+    if (this.showActivePerspectiveNav('dev')) {
       return <DevConsoleNavigation isNavOpen={this.state.isNavOpen} />;
     }
-    return (
-      <Navigation
-        isNavOpen={this.state.isNavOpen}
-        onNavSelect={this._onNavSelect}
-      />
-    );
+    if (this.showAdminNav()) {
+      return (
+        <Navigation
+          isNavOpen={this.state.isNavOpen}
+          onNavSelect={this._onNavSelect}
+        />
+      );
+    }
   }
 
   _prependActivePerspective(path) {
@@ -318,7 +335,7 @@ class App extends React.PureComponent {
                     // <LazyRoute path={this._prependActivePerspective('/k8s/ns/:ns/roles/:name/:rule/edit')} exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
                   }
 
-                  { devconsoleEnabled && devConsoleRoutes.map(r => <Route key={r.path} {...r} />)}
+                  { (devconsoleEnabled) && devConsoleRoutes.map(r => <Route key={r.path} {...r} />)}
 
                   <LazyRoute path={this._prependActivePerspective('/deploy-image')} exact loader={() => import('./deploy-image').then(m => m.DeployImage)} />
 
@@ -357,7 +374,7 @@ class App extends React.PureComponent {
                   <Route path={this._prependActivePerspective('/k8s/all-namespaces/:plural/:name')} component={ResourceDetailsPage} />
 
                   <LazyRoute path={this._prependActivePerspective('/error')} exact loader={() => import('./error' /* webpackChunkName: "error" */).then(m => m.ErrorPage)} />
-                  <Route path={this._prependActivePerspective('/')} exact component={DefaultPage} />
+                  <Route path="/" exact component={DefaultPage} />
 
                   {this._handlePageNotFound(this.props)}
                 </Switch>
