@@ -15,6 +15,7 @@ import {
   SelfSubjectAccessReviewModel,
   PackageManifestModel,
   OperatorGroupModel,
+  PipelineModel,
 } from './models';
 import { k8sBasePath, referenceForModel, ClusterVersionKind } from './module/k8s';
 import { k8sCreate } from './module/k8s/resource';
@@ -66,6 +67,7 @@ export enum FLAGS {
   CLUSTER_VERSION = 'CLUSTER_VERSION',
   MACHINE_CONFIG = 'MACHINE_CONFIG',
   SHOW_DEV_CONSOLE = 'SHOW_DEV_CONSOLE',
+  SHOW_PIPELINE = 'SHOW_PIPELINE',
 }
 
 export const DEFAULTS_ = _.mapValues(FLAGS, flag => flag === FLAGS.AUTH_ENABLED
@@ -82,6 +84,7 @@ export const CRDs = {
   'marketplace.redhat.com~v1alpha1~OperatorSource': FLAGS.OPERATOR_HUB,
   [referenceForModel(MachineModel)]: FLAGS.CLUSTER_API,
   [referenceForModel(MachineConfigModel)]: FLAGS.MACHINE_CONFIG,
+  [referenceForModel(PipelineModel)]: FLAGS.SHOW_PIPELINE,
 };
 
 const SET_FLAG = 'SET_FLAG';
