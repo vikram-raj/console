@@ -105,8 +105,7 @@ describe('ImportFlowForm: ', () => {
   it('update state on Git Repository URL input change', () => {
     const importFlowForm = shallow(<ImportFlowForm {...props} />);
 
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
 
@@ -117,31 +116,28 @@ describe('ImportFlowForm: ', () => {
 
   it('detect git type', () => {
     const importFlowForm = shallow(<ImportFlowForm {...props} />);
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
+    const urlInput = importFlowForm.find('[data-test-id="import-git-repo-url"]');
+    urlInput.simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
+    urlInput.simulate('blur');
     expect(importFlowForm.state().gitType).toBe('github');
   });
 
   it('validate URL', () => {
     const importFlowForm = shallow(<ImportFlowForm {...props} />);
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
+    const urlInput = importFlowForm.find('[data-test-id="import-git-repo-url"]');
+
+    urlInput.simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
+    urlInput.simulate('blur');
     expect(importFlowForm.state().gitRepoUrlError).toBe('');
 
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
+    urlInput.simulate('change', {
       target: { value: 'http://localhost:9000/dev/add' },
     });
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-    .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
+    urlInput.simulate('blur');
     expect(importFlowForm.state().gitRepoUrlError).toBe('Please enter a valid git URL.');
     expect(importFlowForm.state().gitTypeDetected).toBe(undefined);
   });
@@ -149,8 +145,7 @@ describe('ImportFlowForm: ', () => {
   it('update state on name input change', () => {
     const importFlowForm = shallow(<ImportFlowForm {...props} />);
 
-    importFlowForm.find('[data-test-id="import-name"]')
-      .shallow().find('[data-test-id="import-name"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-name"]').simulate('change', {
       target: { value: 'node-app' },
     });
 
@@ -164,16 +159,13 @@ describe('ImportFlowForm: ', () => {
       .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('blur');
+    importFlowForm.find('[data-test-id="import-git-repo-url"]').simulate('blur');
 
-    importFlowForm.find('[data-test-id="import-name"]')
-      .shallow().find('[data-test-id="import-name"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-name"]').simulate('change', {
       target: { value: 'node-app' },
     });
     importFlowForm.find('[data-test-id="import-builder-image"]').simulate('change', 'perl');
-    importFlowForm.find('[data-test-id="import-form"]')
-      .shallow().find('[data-test-id="import-form"]').simulate('submit', {preventDefault});
+    importFlowForm.find('[data-test-id="import-form"]').simulate('submit', {preventDefault});
     const importFormState =  {
       application: '',
       builderImage: 'perl',
