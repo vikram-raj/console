@@ -6,72 +6,81 @@ describe('ImportFlowForm: ', () => {
   const props = {
     activeNamespace: 'default',
     imageStreams: {
-      data: [],
-      perl: {
-        metadata: {
-          name: 'perl',
-          namespace: 'openshift',
-          selfLink: '/apis/image.openshift.io/v1/namespaces/openshift/imagestreams/perl',
-          uid: 'd5769cb7-6729-11e9-8a33-52540024aa6d',
-          resourceVersion: '1867',
-          generation: 2,
-          creationTimestamp: '2019-04-25T07:14:58Z',
-          annotations: {
-            'kubectl.kubernetes.io/last-applied-configuration':
-              '{"apiVersion":"image.openshift.io/v1","kind":"ImageStream","metadata":{"annotations":{"openshift.io/display-name":"Perl"},"name":"perl","namespace":"openshift"},"spec":{"tags":[{"annotations":{"description":"Build and run Perl applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.20/README.md.\\n\\nWARNING: By selecting this tag, your application will automatically update to use the latest version of Perl available on OpenShift, including major versions updates.","iconClass":"icon-perl","openshift.io/display-name":"Perl (Latest)","openshift.io/provider-display-name":"Red Hat, Inc.","sampleRepo":"https://github.com/openshift/dancer-ex.git","supports":"perl","tags":"builder,perl"},"from":{"kind":"ImageStreamTag","name":"5.26"},"name":"latest","referencePolicy":{"type":"Local"}},{"annotations":{"description":"Build and run Perl 5.16 applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.16/README.md.","iconClass":"icon-perl","openshift.io/display-name":"Perl 5.16","openshift.io/provider-display-name":"Red Hat, Inc.","sampleRepo":"https://github.com/openshift/dancer-ex.git","supports":"perl:5.16,perl","tags":"hidden,builder,perl","version":"5.16"},"from":{"kind":"DockerImage","name":"docker.io/openshift/perl-516-centos7:latest"},"name":"5.16","referencePolicy":{"type":"Local"}},{"annotations":{"description":"Build and run Perl 5.20 applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.20/README.md.","iconClass":"icon-perl","openshift.io/display-name":"Perl 5.20","openshift.io/provider-display-name":"Red Hat, Inc.","sampleRepo":"https://github.com/openshift/dancer-ex.git","supports":"perl:5.20,perl","tags":"hidden,builder,perl","version":"5.20"},"from":{"kind":"DockerImage","name":"docker.io/centos/perl-520-centos7:latest"},"name":"5.20","referencePolicy":{"type":"Local"}},{"annotations":{"description":"Build and run Perl 5.24 applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.24/README.md.","iconClass":"icon-perl","openshift.io/display-name":"Perl 5.24","openshift.io/provider-display-name":"Red Hat, Inc.","sampleRepo":"https://github.com/openshift/dancer-ex.git","supports":"perl:5.24,perl","tags":"builder,perl","version":"5.24"},"from":{"kind":"DockerImage","name":"docker.io/centos/perl-524-centos7:latest"},"name":"5.24","referencePolicy":{"type":"Local"}},{"annotations":{"description":"Build and run Perl 5.26 applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.26/README.md.","iconClass":"icon-perl","openshift.io/display-name":"Perl 5.26","openshift.io/provider-display-name":"Red Hat, Inc.","sampleRepo":"https://github.com/openshift/dancer-ex.git","supports":"perl:5.26,perl","tags":"builder,perl","version":"5.26"},"from":{"kind":"DockerImage","name":"docker.io/centos/perl-526-centos7:latest"},"name":"5.26","referencePolicy":{"type":"Local"}}]}}\n',
-            'openshift.io/display-name': 'Perl',
-            'openshift.io/image.dockerRepositoryCheck': '2019-04-25T07:15:21Z',
-          },
-        },
-        spec: {
-          lookupPolicy: {
-            local: false,
-          },
-          tags: [
+      data: [
+        {
+          apiVersion: '',
+          kind: '',
+          metadata: {
+            annotations:
             {
-              name: '5.16',
-              annotations: {
-                description:
-                  'Build and run Perl 5.16 applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.16/README.md.',
-                iconClass: 'icon-perl',
-                'openshift.io/display-name': 'Perl 5.16',
-                'openshift.io/provider-display-name': 'Red Hat, Inc.',
-                sampleRepo: 'https://github.com/openshift/dancer-ex.git',
-                supports: 'perl:5.16,perl',
-                tags: 'hidden,builder,perl',
-                version: '5.16',
-              },
-              from: {
-                kind: 'DockerImage',
-                name: 'docker.io/openshift/perl-516-centos7:latest',
-              },
-              generation: 2,
-              importPolicy: {},
-              referencePolicy: {
-                type: 'Local',
-              },
+              "openshift.io/display-name":"Perl",
+              "openshift.io/image.dockerRepositoryCheck": "2019-05-14T17:59:32Z",
+              "samples.operator.openshift.io/version":"4.1.0-rc.3"
             },
-          ],
-        },
-        status: {
-          dockerImageRepository: '172.30.1.1:5000/openshift/perl',
-          tags: [
-            {
-              tag: '5.16',
-              items: [
-                {
-                  created: '2019-04-25T07:15:21Z',
-                  dockerImageReference:
-                    'docker.io/openshift/perl-516-centos7@sha256:e2d681b6e3b7e8eedf2fbb288c3e6587db6fd2b7a4aa55dd3a8ab032094dfa8c',
-                  image: 'sha256:e2d681b6e3b7e8eedf2fbb288c3e6587db6fd2b7a4aa55dd3a8ab032094dfa8c',
-                  generation: 2,
+            selfLink:"/apis/image.openshift.io/v1/namespaces/openshift/imagestreams/perl",
+            resourceVersion:"11512",
+            name:"perl",
+            uid:"eea7c7af-7671-11e9-a679-0a580a810011",
+            creationTimestamp:"2019-05-14T17:58:51Z",
+            generation:2,
+            namespace:"openshift",
+            labels:{
+              "samples.operator.openshift.io/managed":"true"
+            }
+          },
+          spec:{
+            lookupPolicy:{
+              local:false
+            },
+            tags:[
+              {
+                name:"5.16",
+                annotations: {
+                  description: "Build and run Perl 5.16 applications on RHEL 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-perl-container/blob/master/5.16/README.md.",
+                  iconClass:"icon-perl",
+                  "openshift.io/display-name":"Perl 5.16",
+                  "openshift.io/provider-display-name":"Red Hat, Inc.",
+                  sampleRepo:"https://github.com/sclorg/dancer-ex.git",
+                  supports:"perl:5.16,perl",
+                  tags:"builder,perl",
+                  version:"5.16"
                 },
-              ],
-            },
-          ],
-        },
-      },
+                from:{
+                  kind:"DockerImage",
+                  name:"registry.redhat.io/openshift3/perl-516-rhel7:latest"
+                },
+                generation:2,
+                importPolicy:{},
+                referencePolicy:{
+                  type:"Local"
+                }
+              },
+            ]
+          },
+          status: {
+            dockerImageRepository: "image-registry.openshift-image-registry.svc:5000/openshift/perl",
+            tags: [
+              {
+                items: [
+                  {
+                    created: "2019-05-14T17:59:32Z",
+                    dockerImageReference: "registry.redhat.io/openshift3/perl-516-rhel7@sha256:8d13f434065a54ab85c2134858d5cc218c1ebb1e423d194e664e4ee4a9f4641f",
+                    generation: 2,
+                    image: "sha256:8d13f434065a54ab85c2134858d5cc218c1ebb1e423d194e664e4ee4a9f4641f",
+                  }
+                ],
+                tag: 5.16,
+              }
+            ]
+          }
+        }
+      ],
+      filters: {},
+      kind: undefined,
+      loadError: "",
       loaded: true,
+      optional: undefined,
+      selected: null,
     },
   };
 
@@ -139,7 +148,7 @@ describe('ImportFlowForm: ', () => {
     });
     urlInput.simulate('blur');
     expect(importFlowForm.state().gitRepoUrlError).toBe('Please enter a valid git URL.');
-    expect(importFlowForm.state().gitTypeDetected).toBe(undefined);
+    expect(importFlowForm.state().gitTypeDetected).toBeUndefined();
   });
 
   it('update state on name input change', () => {
@@ -155,8 +164,7 @@ describe('ImportFlowForm: ', () => {
   it ('form submission', () => {
     const preventDefault = jest.fn();
     const importFlowForm = shallow(<ImportFlowForm {...props} />);
-    importFlowForm.find('[data-test-id="import-git-repo-url"]')
-      .shallow().find('[data-test-id="import-git-repo-url"]').simulate('change', {
+    importFlowForm.find('[data-test-id="import-git-repo-url"]').simulate('change', {
       target: { value: 'https://github.com/vikram-raj/console/tree/import-flow' },
     });
     importFlowForm.find('[data-test-id="import-git-repo-url"]').simulate('blur');
@@ -164,11 +172,11 @@ describe('ImportFlowForm: ', () => {
     importFlowForm.find('[data-test-id="import-name"]').simulate('change', {
       target: { value: 'node-app' },
     });
-    importFlowForm.find('[data-test-id="import-builder-image"]').simulate('change', 'perl');
+    importFlowForm.find('[data-test-id="builder-image-selector"]')
+      .shallow().find('BuilderImageCard').simulate('change', 'perl');
     importFlowForm.find('[data-test-id="import-form"]').simulate('submit', {preventDefault});
     const importFormState =  {
       application: '',
-      builderImage: 'perl',
       builderImageError: '',
       gitRepoUrl: 'https://github.com/vikram-raj/console/tree/import-flow',
       gitRepoUrlError: '',
@@ -185,7 +193,10 @@ describe('ImportFlowForm: ', () => {
       nameError: '',
       namespace: 'default',
       namespaceError: '',
+      recommendedImage: '',
       selectedApplicationKey: '',
+      selectedImage: 'perl',
+      selectedImageTag: '5.16',
     }
 
     expect(importFlowForm.state()).toEqual(importFormState);
