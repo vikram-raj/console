@@ -8,14 +8,24 @@ interface NameValueType {
   value: string;
 }
 
+interface NameValueFormType {
+  name: string;
+  valueForm: {
+    configMapKeyRef: {
+      key: string;
+      name: string
+    }
+  }
+}
 interface BuildConfigProps {
   onConfigureWebhookChange: React.ReactEventHandler<HTMLInputElement>;
   onAutomaticallyBuildChange: React.ReactEventHandler<HTMLInputElement>;
   onLaunchFirstBuildChange: React.ReactEventHandler<HTMLInputElement>;
-  onEnviromentVariableChange: (obj: NameValueType) => void;
+  onEnviromentVariableChange: (obj: NameValueType | NameValueFormType) => void;
   configureWebhookChecked: boolean;
   automaticallyBuildChecked: boolean;
   launchFirstBuildChecked: boolean;
+  namespace: string;
 }
 
 const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
@@ -24,7 +34,14 @@ const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
   onEnviromentVariableChange,
   configureWebhookChecked,
   automaticallyBuildChecked,
-  launchFirstBuildChecked}) => {
+  launchFirstBuildChecked,
+  namespace}) => {
+
+  const buildConfigObj = {
+    metadata: {
+      namespace: namespace
+    }
+  };
 
   return (
     <React.Fragment>
@@ -57,6 +74,7 @@ const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
         <div>
           <EnvironmentPage
             envPath={['spec', 'strategy']}
+            obj={buildConfigObj}
             readOnly={false}
             onChange={onEnviromentVariableChange}
             addConfigMapSecret={true}
