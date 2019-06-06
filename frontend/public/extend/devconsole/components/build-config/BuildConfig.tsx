@@ -1,27 +1,34 @@
 /*eslint-disable no-unused-vars, no-undef */
 import * as React from 'react';
-import { Checkbox } from './../../../../../public/components/checkbox';
-import { EnvironmentPage } from './../../../../../public/components/environment';
+import { Checkbox } from 'patternfly-react';
+import { EnvironmentPage } from './../../../../components/environment';
 
 interface NameValueType {
   name: string;
   value: string;
 }
+interface configMapKeyType {
+  configMapKeyRef: {
+    key: string;
+    name: string
+  }
+}
 
+interface secretKeyRefType {
+  secretKeyRef: {
+    key: string;
+    name: string;
+  }
+}
 interface NameValueFormType {
   name: string;
-  valueForm: {
-    configMapKeyRef: {
-      key: string;
-      name: string
-    }
-  }
+  valueForm: configMapKeyType | secretKeyRefType;
 }
 interface BuildConfigProps {
   onConfigureWebhookChange: React.ReactEventHandler<HTMLInputElement>;
   onAutomaticallyBuildChange: React.ReactEventHandler<HTMLInputElement>;
   onLaunchFirstBuildChange: React.ReactEventHandler<HTMLInputElement>;
-  onEnviromentVariableChange: (obj: NameValueType | NameValueFormType) => void;
+  onEnviromentVariableChange: (envPairs:( NameValueType | NameValueFormType)[]) => void;
   configureWebhookChecked: boolean;
   automaticallyBuildChecked: boolean;
   launchFirstBuildChecked: boolean;
@@ -39,8 +46,8 @@ const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
 
   const buildConfigObj = {
     metadata: {
-      namespace: namespace
-    }
+      namespace,
+    },
   };
 
   return (
@@ -50,22 +57,25 @@ const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
       </div>
 
       <Checkbox
-        label="Configure a webhook build trigger"
         name="configureWebhookBuild"
         onChange={onConfigureWebhookChange}
-        checked={configureWebhookChecked} />
+        checked={configureWebhookChecked}>
+        Configure a webhook build trigger
+      </Checkbox>
 
       <Checkbox
-        label="Automatically build a new image when the builder image changes"
         name="automaticallyBuildImage"
         onChange={onAutomaticallyBuildChange}
-        checked={automaticallyBuildChecked} />
+        checked={automaticallyBuildChecked}>
+        Automatically build a new image when the builder image changes
+      </Checkbox>
 
       <Checkbox
-        label="Launch the first build when the build configuration is created"
         name="launchFirstBuild"
         onChange={onLaunchFirstBuildChange}
-        checked={launchFirstBuildChecked} />
+        checked={launchFirstBuildChecked}>
+        Launch the first build when the build configuration is created
+      </Checkbox>
 
       <div>
         <div className="co-section-heading-tertiary">
