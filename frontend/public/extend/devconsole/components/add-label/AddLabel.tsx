@@ -1,16 +1,17 @@
+/* eslint-disable no-undef, dot-notation */
 import * as React from 'react';
-import { EnvironmentPage } from './../../../../../public/components/environment';
+import { EnvironmentPage } from './../../../../components/environment';
 
 interface LabelValue {
   name: string;
   value: string;
 }
 
-interface DeploymentConfigProps {
+interface AddLabelProps {
   onLabelAdd: (obj: LabelValue) => void;
 }
 
-const AddLabel: React.FC<DeploymentConfigProps> = ({onLabelAdd}) => {
+const AddLabel: React.FC<AddLabelProps> = ({onLabelAdd}) => {
 
   return (
     <React.Fragment>
@@ -24,6 +25,6 @@ const AddLabel: React.FC<DeploymentConfigProps> = ({onLabelAdd}) => {
         useLoadingInline={true} />
     </React.Fragment>
   );
-}
+};
 
 export default AddLabel;
