@@ -1,7 +1,7 @@
 /*eslint-disable no-unused-vars, no-undef */
 import * as React from 'react';
 import { Checkbox } from './../../../../../public/components/checkbox';
-import { EnvironmentPage } from './../../../../../public/components/environment';
+import { EnvironmentPage } from './../../../../components/environment';
 
 interface NameValueType {
   name: string;
@@ -18,16 +18,16 @@ interface NameValueFormType {
   }
 }
 
-interface BuildConfigProps {
+interface DeploymentConfigProps {
   onNewImageAvailableChange: React.ReactEventHandler<HTMLInputElement>;
   onDeploymentConfigChange: React.ReactEventHandler<HTMLInputElement>;
-  onEnviromentVariableChange: (obj: NameValueType | NameValueFormType) => void;
+  onEnviromentVariableChange: (envPairs: (NameValueType | NameValueFormType)[]) => void;
   newImageAvailableChecked: boolean;
   deploymentConfigChecked: boolean;
   namespace: string;
 }
 
-const DeploymentConfig: React.FC<BuildConfigProps> = ({onNewImageAvailableChange,
+const DeploymentConfig: React.FC<DeploymentConfigProps> = ({onNewImageAvailableChange,
   onDeploymentConfigChange,
   onEnviromentVariableChange,
   newImageAvailableChecked,
@@ -36,8 +36,8 @@ const DeploymentConfig: React.FC<BuildConfigProps> = ({onNewImageAvailableChange
 
   const buildConfigObj = {
     metadata: {
-      namespace: namespace
-    }
+      namespace,
+    },
   };
 
   return (
