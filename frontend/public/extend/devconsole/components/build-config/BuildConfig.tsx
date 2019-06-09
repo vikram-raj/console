@@ -1,12 +1,15 @@
 /*eslint-disable no-unused-vars, no-undef */
 import * as React from 'react';
+import * as _ from 'lodash-es';
 import { Checkbox } from 'patternfly-react';
 import { EnvironmentPage } from './../../../../components/environment';
+import { K8sResourceKind } from './../../../../module/k8s';
 
 interface NameValueType {
   name: string;
   value: string;
 }
+
 interface configMapKeyType {
   configMapKeyRef: {
     key: string;
@@ -20,10 +23,12 @@ interface secretKeyRefType {
     name: string;
   }
 }
+
 interface NameValueFormType {
   name: string;
   valueForm: configMapKeyType | secretKeyRefType;
 }
+
 interface BuildConfigProps {
   onConfigureWebhookChange: React.ReactEventHandler<HTMLInputElement>;
   onAutomaticallyBuildChange: React.ReactEventHandler<HTMLInputElement>;
@@ -33,6 +38,8 @@ interface BuildConfigProps {
   automaticallyBuildChecked: boolean;
   launchFirstBuildChecked: boolean;
   namespace: string;
+  buildConfig?: K8sResourceKind;
+  readOnly: boolean;
 }
 
 const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
@@ -42,13 +49,16 @@ const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
   configureWebhookChecked,
   automaticallyBuildChecked,
   launchFirstBuildChecked,
-  namespace}) => {
+  namespace,
+  buildConfig={},
+  readOnly,
+}) => {
 
-  const buildConfigObj = {
+  const buildConfigObj = _.isEmpty(buildConfig) ? {
     metadata: {
       namespace,
     },
-  };
+  } : buildConfig;
 
   return (
     <React.Fragment>
@@ -85,7 +95,7 @@ const BuildConfig: React.FC<BuildConfigProps> = ({onConfigureWebhookChange,
           <EnvironmentPage
             envPath={['spec', 'strategy']}
             obj={buildConfigObj}
-            readOnly={false}
+            readOnly={readOnly}
             onChange={onEnviromentVariableChange}
             addConfigMapSecret={true}
             useLoadingInline={true} />
