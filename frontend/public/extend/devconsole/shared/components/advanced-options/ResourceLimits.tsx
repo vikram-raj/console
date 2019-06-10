@@ -8,7 +8,6 @@ import {
   units,
   convertToBaseValue,
 } from '../../../../../components/utils';
-import './ResourceLimits.scss';
 
 interface ResourceLimitProps {
   cpuRequest?: {
@@ -201,7 +200,7 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
       <div className="co-section-heading-tertiary">CPU</div>
       <FormGroup controlId="cpu-request" className={cpuRequestError && 'has-error'}>
         <div className="co-m-table-grid__body row">
-          <div className="col-sm-3">
+          <div className="col-lg-4 col-md-4 col-xs-4 col-sm-6">
             <ControlLabel>Request</ControlLabel>
             <NumberSpinner
               id="cpu-request"
@@ -212,10 +211,9 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
               changeValueBy={onChangeCpuRequest}
             />
           </div>
-          <div className="col-sm-2">
+          <div className="col-lg-8 col-md-8 col-xs-8 col-sm-6">
             <ControlLabel>Unit</ControlLabel>
             <Dropdown
-              dropDownClassName="dropdown--full-width"
               items={cpuUnits}
               selectedKey={cpuUnits.millicores}
               title={cpuUnits.millicores}
@@ -228,7 +226,7 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
       </FormGroup>
       <FormGroup controlId="cpu-limit" className={cpuLimitError && 'has-error'}>
         <div className="co-m-table-grid__body row">
-          <div  className="col-sm-3">
+          <div  className="col-lg-4 col-md-4 col-xs-4 col-sm-6">
             <ControlLabel>Limit</ControlLabel>
             <NumberSpinner
               id="cpu-limit"
@@ -239,10 +237,9 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
               changeValueBy={onChangeCpuLimit}
             />
           </div>
-          <div className="col-sm-2">
+          <div className="col-lg-8 col-md-8 col-xs-8 col-sm-6">
             <ControlLabel>Unit</ControlLabel>
             <Dropdown
-              dropDownClassName="dropdown--full-width"
               items={cpuUnits}
               selectedKey={cpuUnits.millicores}
               title={cpuUnits.millicores}
@@ -258,7 +255,7 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
       <div className="co-section-heading-tertiary">Memory</div>
       <FormGroup controlId="memory-request" className={memoryRequestError && 'has-error'}>
         <div className="co-m-table-grid__body row">
-          <div className="col-sm-3">
+          <div className="col-lg-4 col-md-4 col-xs-4 col-sm-6">
             <ControlLabel>Request</ControlLabel>
             <NumberSpinner
               id="memory-request"
@@ -269,10 +266,9 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
               changeValueBy={onChangeMemoryRequest}
             />
           </div>
-          <div className="col-sm-2">
+          <div className="col-lg-8 col-md-8 col-xs-8 col-sm-6">
             <ControlLabel>Unit</ControlLabel>
             <Dropdown
-              dropDownClassName="dropdown--full-width"
               items={memoryUnits}
               selectedKey={memoryUnits.MiB}
               title={memoryUnits.MiB}
@@ -290,7 +286,7 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
       </FormGroup>
       <FormGroup controlId="memory-limit" className={memoryLimitError && 'has-error'}>
         <div className="co-m-table-grid__body row">
-          <div className="col-sm-3">
+          <div className="col-lg-4 col-md-4 col-xs-4 col-sm-6">
             <ControlLabel>Limit</ControlLabel>
             <NumberSpinner
               id="memory-limit"
@@ -301,10 +297,9 @@ const ResourceLimits: React.FC<ResourceLimitProps> = ({
               changeValueBy={onChangeMemoryLimit}
             />
           </div>
-          <div className="col-sm-2">
+          <div className="col-lg-8 col-md-8 col-xs-8 col-sm-6">
             <ControlLabel>Unit</ControlLabel>
             <Dropdown
-              dropDownClassName="dropdown--full-width"
               items={memoryUnits}
               selectedKey={memoryUnits.MiB}
               title={memoryUnits.MiB}
