@@ -2,8 +2,8 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import { Checkbox } from 'patternfly-react';
-import { EnvironmentPage } from './../../../../components/environment';
-import { K8sResourceKind } from './../../../../module/k8s';
+import { EnvironmentPage } from '../../../../../components/environment';
+import { K8sResourceKind } from '../../../../../module/k8s';
 
 interface NameValueType {
   name: string;
