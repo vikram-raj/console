@@ -1,7 +1,7 @@
 /* eslint-disable no-undef, dot-notation */
 import * as React from 'react';
 import * as _ from 'lodash-es';
-import { AsyncComponent } from './../../../../components/utils';
+import { AsyncComponent } from '../../../../../components/utils';
 
 interface LabelValue {
   name: string;
@@ -14,7 +14,7 @@ interface AddLabelProps {
   readOnly: boolean;
 }
 
-const NameValueEditorComponent = (props) => <AsyncComponent loader={() => import('./../../../../components/utils/name-value-editor').then(c => c.NameValueEditor)} {...props} />;
+const NameValueEditorComponent = (props) => <AsyncComponent loader={() => import('../../../../../components/utils/name-value-editor').then(c => c.NameValueEditor)} {...props} />;
 
 const AddLabel: React.FC<AddLabelProps> = ({onLabelAdd, labels, readOnly}) => {
 
