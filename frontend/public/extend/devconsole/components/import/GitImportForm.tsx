@@ -13,6 +13,7 @@ import ScalingSection from './advanced/ScalingSection';
 import BuildConfigSection from './advanced/BuildConfigSection';
 import DeploymentConfigSection from './advanced/DeploymentConfigSection';
 import LabelSection from './advanced/LabelSection';
+import ResourceLimitSection from './advanced/ResourceLimitSection';
 
 export interface GitImportFormProps {
   builderImages?: NormalizedBuilderImages;
@@ -39,6 +40,7 @@ const GitImportForm: React.FC<FormikProps<FormikValues> & GitImportFormProps> = 
         <DeploymentConfigSection namespace={values.project.name} />
         <ScalingSection />
         <LabelSection />
+        <ResourceLimitSection />
       </ExpandCollapse>
     </div>
     <br />

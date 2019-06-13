@@ -61,6 +61,12 @@ describe('ValidationUtils', () => {
         replicas: 1,
       },
       labels: {},
+      resourceLimit: {
+        cpuRequest: 1,
+        cpuLimit: 1,
+        memoryRequest: 1,
+        memoryLimit: 1,
+      }
     };
 
     it('should validate the form data', async () => {

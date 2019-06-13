@@ -10,6 +10,7 @@ import {
   createBuildConfig,
   createService,
   createRoute,
+  createResourceLimit
 } from './import-submit-utils';
 import { history } from '../../../../components/utils';
 import { validationSchema } from './import-validation-utils';
@@ -63,6 +64,24 @@ const GitImport: React.FC<GitImportProps> = ({ namespace, imageStreams }) => {
       replicas: 1,
     },
     labels: {},
+    resourceLimit: {
+      cpuRequest: {
+        request: 1,
+        requestUnit: 'millicores',
+      },
+      cpuLimit: {
+        limit: 1,
+        limitUnit: 'millicores',
+      },
+      memoryRequest: {
+        request: 1,
+        requestUnit: 'MiB'
+      },
+      memoryLimit: {
+        limit: 1,
+        limitUnit: 'MiB'
+      }
+    }
   };
 
   const builderImages: NormalizedBuilderImages =
@@ -74,13 +93,14 @@ const GitImport: React.FC<GitImportProps> = ({ namespace, imageStreams }) => {
     const {
       project: { name: namespace },
       route: { create: canCreateRoute },
-      image: { ports },
+      image: { ports }
     } = values;
 
     const requests = [
       createDeploymentConfig(values, imageStream),
       createImageStream(values, imageStream),
       createBuildConfig(values, imageStream),
+      createResourceLimit(values, imageStream),
     ];
 
     // Only create a service or route if the builder image has ports.

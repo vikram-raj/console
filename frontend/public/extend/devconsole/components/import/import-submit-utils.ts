@@ -6,6 +6,7 @@ import {
   DeploymentConfigModel,
   ServiceModel,
   RouteModel,
+  ResourceQuotaModel
 } from '../../../../models';
 import { k8sCreate, K8sResourceKind } from '../../../../module/k8s';
 import { makePortName } from '../../utils/imagestream-utils';
@@ -238,3 +239,38 @@ export const createRoute = (
 
   return k8sCreate(RouteModel, route);
 };
+
+export const createResourceLimit = (
+  formData: GitImportFormData,
+  imageStream: K8sResourceKind,
+): Promise<K8sResourceKind> => {
+  const {
+    name,
+    project: { name: namespace },
+    application: { name: application },
+    labels: userLabels,
+    resourceLimit: resource
+  } = formData;
+
+  const defaultLabels = getAppLabels(name, application, imageStream.metadata.name);
+
+  const resourceLimit = {
+    kind: 'ResourceQuota',
+    apiVersion: 'v1',
+    metadata: {
+      name,
+      namespace,
+      labels: { ...defaultLabels, ...userLabels }
+    },
+    spec: {
+      hard: {
+        'limits.cpu': resource.cpuLimit.limit,
+        'limits.memory': resource.memoryLimit.limit,
+        'requests.cpu': resource.cpuRequest.request,
+        'requests.memory': resource.memoryRequest.request
+      }
+    }
+  }
+
+  return k8sCreate(ResourceQuotaModel, resourceLimit);
+}

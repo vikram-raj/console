@@ -15,6 +15,7 @@ export interface GitImportFormData {
   build: BuildData;
   deployment: DeploymentData;
   labels: { [name: string]: string };
+  resourceLimit: any;
 }
 
 export interface ApplicationData {
