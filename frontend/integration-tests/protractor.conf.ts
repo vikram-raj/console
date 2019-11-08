@@ -90,9 +90,7 @@ const testSuites = {
     'tests/monitoring.scenario.ts',
     'tests/crd-extensions.scenario.ts',
   ]),
-  'ceph-storage-plugin': suite([
-    'tests/storage-dashboard.scenario.ts',
-  ]),
+  'ceph-storage-plugin': suite(['tests/storage-dashboard.scenario.ts']),
   release: suite([
     'tests/crud.scenario.ts',
     'tests/secrets.scenario.ts',
