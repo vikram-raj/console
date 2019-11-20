@@ -73,16 +73,22 @@ const PodRing: React.FC<PodRingProps> = ({
           <PodStatus
             standalone
             data={pods}
-            subTitle={
-              resourceObj.spec.replicas !== resourceObj.status.availableReplicas
-                ? !resourceObj.spec.replicas
-                  ? `pods`
-                  : `scaling to ${resourceObj.spec.replicas}`
-                : resourceObj.spec.replicas > 1 || resourceObj.spec.replicas === 0
-                ? 'pods'
-                : 'pod'
+            {...(resourceObj.status.availableReplicas
+              ? {
+                  subTitle:
+                    resourceObj.spec.replicas !== resourceObj.status.availableReplicas
+                      ? !resourceObj.spec.replicas
+                        ? `pods`
+                        : `scaling to ${resourceObj.spec.replicas}`
+                      : resourceObj.spec.replicas > 1 || resourceObj.spec.replicas === 0
+                      ? 'pods'
+                      : 'pod',
+                }
+              : {})}
+            title={
+              resourceObj.status.availableReplicas ||
+              (isScalingAllowed ? 'Scaled to 0' : 'AutoScaled to 0')
             }
-            title={resourceObj.status.availableReplicas || '0'}
           />
         </div>
       </SplitItem>
