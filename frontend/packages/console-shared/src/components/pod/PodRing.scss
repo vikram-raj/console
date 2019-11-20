@@ -3,4 +3,9 @@
   & svg {
     overflow: visible!important;
   }
+  &--scaled {
+    tspan {
+      font-size: 14px !important;
+    }
+  }
 }

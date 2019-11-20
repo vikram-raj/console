@@ -69,7 +69,11 @@ const PodRing: React.FC<PodRingProps> = ({
   return (
     <Split>
       <SplitItem>
-        <div className="odc-pod-ring">
+        <div
+          className={`odc-pod-ring${
+            resourceObj.status.availableReplicas ? '' : ' odc-pod-ring--scaled'
+          }`}
+        >
           <PodStatus
             standalone
             data={pods}
