@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as _ from 'lodash';
 import { Grid, GridItem } from '@patternfly/react-core';
-import { K8sResourceKind } from '@console/internal/module/k8s';
-import { SidebarSectionHeading } from '@console/internal/components/utils';
+import { K8sResourceKind, PodKind } from '@console/internal/module/k8s';
 import { requirePrometheus } from '@console/internal/components/graphs';
 import MonitoringDashboardGraph from '../dashboard/MonitoringDashboardGraph';
 import { workloadMetricQueries } from './queries';
+import MonitoringOverviewSection from './MonitoringOverviewSection';
 
 const WorkloadGraphs = requirePrometheus(({ deployment }) => {
   const ns = deployment.metadata.namespace;
@@ -31,17 +31,23 @@ const WorkloadGraphs = requirePrometheus(({ deployment }) => {
   );
 });
 
-const MonitoringMetricsSection: React.FC<MonitoringMetricsSectionProps> = ({ deployment }) => {
+const MonitoringMetricsSection: React.FC<MonitoringMetricsSectionProps> = ({
+  deployment,
+  pods,
+}) => {
   return (
     <>
-      <SidebarSectionHeading text="Metrics" />
+      <MonitoringOverviewSection type="alerts" pods={pods} />
+      <h2>Metrics</h2>
       <WorkloadGraphs deployment={deployment} />
+      <MonitoringOverviewSection type="events" pods={pods} />
     </>
   );
 };
 
 type MonitoringMetricsSectionProps = {
   deployment: K8sResourceKind;
+  pods: PodKind[];
 };
 
 export default MonitoringMetricsSection;
