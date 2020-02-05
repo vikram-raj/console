@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
-import { matchPath, match as RMatch, Link } from 'react-router-dom';
+import { matchPath, match as RMatch, Link, Redirect } from 'react-router-dom';
 import { Tooltip, Popover, Button } from '@patternfly/react-core';
 import { ListIcon, TopologyIcon, QuestionCircleIcon } from '@patternfly/react-icons';
-import { getActiveApplication } from '@console/internal/reducers/ui';
-import { ALL_APPLICATIONS_KEY } from '@console/shared';
+import { getActiveApplication, getTopologyActiveView } from '@console/internal/reducers/ui';
+import * as UIActions from '@console/internal/actions/ui';
+import { ALL_APPLICATIONS_KEY, LAST_TOPOLOGY_VIEW_LOCAL_STORAGE_KEY } from '@console/shared';
 import { StatusBox, Firehose, HintBlock, AsyncComponent } from '@console/internal/components/utils';
 import { RootState } from '@console/internal/redux';
 import { FLAG_KNATIVE_SERVING_SERVICE } from '@console/knative-plugin';
@@ -22,6 +23,8 @@ import './TopologyPage.scss';
 
 interface StateProps {
   activeApplication: string;
+  setTopologyActiveView?: any;
+  topologyActiveView: string;
   knative: boolean;
   cheURL: string;
   serviceBinding: boolean;
@@ -34,6 +37,14 @@ export interface TopologyPageProps {
 }
 
 type Props = TopologyPageProps & StateProps;
+
+const setTopologyActiveVie = (id: string) => {
+  localStorage.setItem(LAST_TOPOLOGY_VIEW_LOCAL_STORAGE_KEY, id);
+};
+
+const getTopologyActiveVie = () => {
+  return localStorage.getItem(LAST_TOPOLOGY_VIEW_LOCAL_STORAGE_KEY);
+};
 
 const EmptyMsg = () => (
   <EmptyState
@@ -71,6 +82,8 @@ const TopologyPage: React.FC<Props> = ({
   knative,
   cheURL,
   serviceBinding,
+  setTopologyActiveView,
+  topologyActiveView,
 }) => {
   const namespace = match.params.name;
   const application = activeApplication === ALL_APPLICATIONS_KEY ? undefined : activeApplication;
@@ -78,6 +91,14 @@ const TopologyPage: React.FC<Props> = ({
     path: '*/list',
     exact: true,
   });
+
+  const handleClick = (id) => {
+    setTopologyActiveView(id);
+  };
+
+  if (getTopologyActiveVie() === 'list' && !showListView) {
+    return <Redirect to={`/topology/ns/${namespace}/list`} />;
+  }
 
   return (
     <>
@@ -112,6 +133,7 @@ const TopologyPage: React.FC<Props> = ({
                 to={`/topology/${namespace ? `ns/${namespace}` : 'all-namespaces'}${
                   showListView ? '' : '/list'
                 }`}
+                onClick={() => setTopologyActiveVie(showListView ? 'topology' : 'list')}
               >
                 {showListView ? <TopologyIcon size="md" /> : <ListIcon size="md" />}
               </Link>
@@ -168,7 +190,10 @@ const mapStateToProps = (state: RootState): StateProps => {
     knative: getKnativeStatus(state),
     cheURL: getCheURL(consoleLinks),
     serviceBinding: getServiceBindingStatus(state),
+    topologyActiveView: getTopologyActiveView(state),
   };
 };
 
-export default connect(mapStateToProps)(TopologyPage);
+export default connect<StateProps, {}>(mapStateToProps, {
+  setTopologyActiveView: UIActions.setTopologyActiveView,
+})(TopologyPage);

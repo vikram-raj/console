@@ -10,6 +10,7 @@ import {
   ALL_NAMESPACES_KEY,
   LAST_NAMESPACE_NAME_LOCAL_STORAGE_KEY,
   LAST_PERSPECTIVE_LOCAL_STORAGE_KEY,
+  LAST_TOPOLOGY_VIEW_LOCAL_STORAGE_KEY,
 } from '@console/shared/src/constants';
 import { K8sResourceKind, PodKind } from '../module/k8s';
 import { allModels } from '../module/k8s/k8s-models';
@@ -24,6 +25,7 @@ export enum ActionType {
   SetActiveApplication = 'setActiveApplication',
   SetActiveNamespace = 'setActiveNamespace',
   SetActivePerspective = 'setActivePerspective',
+  SetTopologyActiveView = 'setTopologyActiveView',
   SetCreateProjectMessage = 'setCreateProjectMessage',
   SetCurrentLocation = 'setCurrentLocation',
   MonitoringDashboardsClearVariables = 'monitoringDashboardsClearVariables',
@@ -180,6 +182,13 @@ export const setActivePerspective = (perspective: string) => {
   return action(ActionType.SetActivePerspective, { perspective });
 };
 
+export const setTopologyActiveView = (view: string) => {
+  // remember the most recently-viewed perspective, which is automatically
+  // selected when returning to the console
+  localStorage.setItem(LAST_TOPOLOGY_VIEW_LOCAL_STORAGE_KEY, view);
+  return action(ActionType.SetTopologyActiveView, { view });
+};
+
 export const beginImpersonate = (kind: string, name: string, subprotocols: string[]) =>
   action(ActionType.BeginImpersonate, { kind, name, subprotocols });
 export const endImpersonate = () => action(ActionType.EndImpersonate);
@@ -320,6 +329,7 @@ const uiActions = {
   setActiveApplication,
   setActiveNamespace,
   setActivePerspective,
+  setTopologyActiveView,
   beginImpersonate,
   endImpersonate,
   sortList,

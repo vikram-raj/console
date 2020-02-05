@@ -106,6 +106,9 @@ export default (state: UIState, action: UIAction): UIState => {
     case ActionType.SetActivePerspective:
       return state.set('activePerspective', action.payload.perspective);
 
+    case ActionType.SetTopologyActiveView:
+      return state.set('topologyActiveView', action.payload.view);
+
     case ActionType.SetCurrentLocation: {
       state = state.set('location', action.payload.location);
       const ns = getNamespace(action.payload.location);
@@ -336,3 +339,5 @@ export const getActiveNamespace = ({ UI }: RootState): string => UI.get('activeN
 export const getActivePerspective = ({ UI }: RootState): string => UI.get('activePerspective');
 
 export const getActiveApplication = ({ UI }: RootState): string => UI.get('activeApplication');
+
+export const getTopologyActiveView = ({ UI }: RootState): string => UI.get('topologyActiveView');
