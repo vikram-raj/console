@@ -21,13 +21,18 @@ const { alertManagerBaseURL } = window.SERVER_FLAGS;
 
 const SilenceUntil = ({ rule }) => {
   if (!_.isEmpty(rule.silencedBy)) {
-    return <StateTimestamp text="Until" timestamp={_.max(_.map(rule.silencedBy, 'endsAt'))} />;
+    return (
+      <div onClick={(e) => e.preventDefault()} role="presentation">
+        <StateTimestamp text="Until" timestamp={_.max(_.map(rule.silencedBy, 'endsAt'))} />
+      </div>
+    );
   }
   return null;
 };
 
 const SilenceAlert: React.FC<SilenceAlertProps> = ({ rule }) => {
   const [isChecked, setIsChecked] = React.useState(true);
+  const [isInprogress, setIsInprogress] = React.useState(false);
   const rules = useSelector((state: RootState) => state.UI.getIn(['monitoring', 'devRules']));
   const dispatch = useDispatch();
   React.useEffect(() => {
@@ -48,7 +53,9 @@ const SilenceAlert: React.FC<SilenceAlertProps> = ({ rule }) => {
             });
             _.omit(rule, 'silencedBy');
             rule.state = RuleStates.Inactive;
-            const updatedRules = [...rules, ...[rule]];
+            const ruleIndex = rules.findIndex((r) => r.id === rule.id);
+            const updatedRules = _.cloneDeep(rules);
+            updatedRules.splice(ruleIndex, 1, rule);
             dispatch(monitoringSetRules('devRules', updatedRules, 'dev'));
             setIsChecked(true);
           })
@@ -70,9 +77,13 @@ const SilenceAlert: React.FC<SilenceAlertProps> = ({ rule }) => {
         rule.state === RuleStates.Silenced && !isChecked ? (
           <SilenceUntil rule={rule} />
         ) : (
-          <SilenceDurationDropDown rule={rule} />
+          <SilenceDurationDropDown
+            silenceInProgress={(progress) => setIsInprogress(progress)}
+            rule={rule}
+          />
         )
       }
+      isDisabled={isInprogress}
       isChecked={isChecked}
       onChange={handleChange}
     />

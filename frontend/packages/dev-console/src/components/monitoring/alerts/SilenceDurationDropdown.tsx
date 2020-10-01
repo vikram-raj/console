@@ -22,6 +22,7 @@ import './SilenceDurationDropdown.scss';
 
 type SilenceDurationDropDownProps = {
   rule: Rule;
+  silenceInProgress?: (progress: boolean) => void;
 };
 
 const durations = {
@@ -31,7 +32,10 @@ const durations = {
   '1d': '1 day',
 };
 
-const SilenceDurationDropDown: React.FC<SilenceDurationDropDownProps> = ({ rule }) => {
+const SilenceDurationDropDown: React.FC<SilenceDurationDropDownProps> = ({
+  rule,
+  silenceInProgress,
+}) => {
   const [silencing, setSilencing] = React.useState(false);
   const createdBy = useSelector((state: RootState) => state.UI.get('user')?.metadata?.name);
   const rules = useSelector((state: RootState) => state.UI.getIn(['monitoring', 'devRules']));
@@ -46,6 +50,9 @@ const SilenceDurationDropDown: React.FC<SilenceDurationDropDownProps> = ({ rule 
     },
     ...ruleMatchers,
   ];
+  React.useEffect(() => {
+    silenceInProgress && silenceInProgress(silencing);
+  }, [silencing, silenceInProgress]);
 
   const setDuration = (duration: string) => {
     const startsAt = new Date();
@@ -73,7 +80,9 @@ const SilenceDurationDropDown: React.FC<SilenceDurationDropDownProps> = ({ rule 
               _.each(rule.alerts, (a) => (a.state = AlertStates.Silenced));
               rule.state = RuleStates.Silenced;
             }
-            const updatedRules = [...rules, ...[rule]];
+            const ruleIndex = rules.findIndex((r) => r.id === rule.id);
+            const updatedRules = _.cloneDeep(rules);
+            updatedRules.splice(ruleIndex, 1, rule);
             dispatch(monitoringSetRules('devRules', updatedRules, 'dev'));
             setSilencing(false);
           })
