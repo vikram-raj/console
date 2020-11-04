@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 /* eslint-disable @typescript-eslint/camelcase */
 import { chart_color_red_400 as red400 } from '@patternfly/react-tokens/dist/js/chart_color_red_400';
 import { chart_color_red_300 as red300 } from '@patternfly/react-tokens/dist/js/chart_color_red_300';
@@ -124,5 +125,25 @@ export const totalFor = (priority: Priority) => (obj: ImageManifestVuln) => {
   }
 };
 
+export const totalVulnFor = (priority: Priority) => (imageVulns) => {
+  switch (priority) {
+    case Priority.Defcon1:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.Defcon1).length;
+    case Priority.Critical:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.Critical).length;
+    case Priority.High:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.High).length;
+    case Priority.Medium:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.Medium).length;
+    case Priority.Low:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.Low).length;
+    case Priority.Negligible:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.Negligible).length;
+    case Priority.Unknown:
+      return _.filter(imageVulns, (imageVuln) => imageVuln.severity === Priority.Unknown).length;
+    default:
+      return 0;
+  }
+};
 export const priorityFor = (severity: string) =>
   vulnPriority.find(({ title }) => title === severity) || vulnPriority.get(Priority.Unknown);

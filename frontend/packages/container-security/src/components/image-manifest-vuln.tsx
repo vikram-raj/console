@@ -28,14 +28,15 @@ import {
   FirehoseResult,
   Loading,
 } from '@console/internal/components/utils';
-import { ChartDonut } from '@patternfly/react-charts';
 import { DefaultList } from '@console/internal/components/default-resource';
+import { ContainerLink } from '@console/internal/components/pod';
 import { vulnPriority, totalFor, priorityFor } from '../const';
-import { ImageManifestVuln, Feature, Vulnerability } from '../types';
+import { ImageManifestVuln } from '../types';
 import { ImageManifestVulnModel } from '../models';
 import { quayURLFor } from './summary';
+import ImageVulnerabilitiesList from './ImageVulnerabilitiesList';
 import './image-manifest-vuln.scss';
-import { ContainerLink } from '@console/internal/components/pod';
+import ImageVulnerabilityToggleGroup from './ImageVulnerabilityToggleGroup';
 
 const shortenImage = (img: string) =>
   img
@@ -52,143 +53,35 @@ export const totalCount = (obj: ImageManifestVuln) => {
 export const affectedPodsCount = (obj: ImageManifestVuln) =>
   Object.keys(obj.status.affectedPods).length;
 
-export const ImageVulnerabilityRow: React.FC<ImageVulnerabilityRowProps> = (props) => {
-  return (
-    <div className="row">
-      <div className="col-lg-3 col-md-3 col-sm-4 col-xs-6">
-        <ExternalLink text={props.vulnerability.name} href={props.vulnerability.link} />
-      </div>
-      <div className="col-lg-2 col-md-2 col-sm-5 col-xs-6">
-        <SecurityIcon color={priorityFor(props.vulnerability.severity).color.value} />
-        &nbsp;{props.vulnerability.severity}
-      </div>
-      <div className="col-lg-2 col-md-2 col-sm-3 hidden-xs">{props.packageName}</div>
-      <div className="col-lg-2 col-md-2 hidden-sm hidden-xs">{props.currentVersion}</div>
-      <div className="col-lg-3 col-md-3 hidden-sm hidden-xs">
-        {props.vulnerability.fixedby || '-'}
+export const ImageManifestVulnDetails: React.FC<ImageManifestVulnDetailsProps> = (props) => (
+  <>
+    <div className="co-m-pane__body">
+      <SectionHeading text="Image Manifest Vuln Details" />
+      <ImageVulnerabilityToggleGroup obj={props.obj} />
+    </div>
+    <div className="co-m-pane__body">
+      <div className="row">
+        <div className="col-sm-6">
+          <ResourceSummary resource={props.obj} />
+        </div>
+        <div className="col-sm-6">
+          <dl className="co-m-pane__details">
+            <DetailsItem label="Registry" obj={props.obj} path="spec.image" />
+            <DetailsItem label="Manifest" obj={props.obj} path="obj.spec.manifest">
+              <ExternalLink
+                text={shortenHash(props.obj.spec.manifest)}
+                href={quayURLFor(props.obj)}
+              />
+            </DetailsItem>
+          </dl>
+        </div>
       </div>
     </div>
-  );
-};
-
-export const ImageVulnerabilitiesTable: React.FC<ImageVulnerabilitiesTableProps> = (props) => {
-  const { t } = useTranslation();
-  const vulnerabilites = _.sortBy(
-    _.flatten(
-      props.features.map((feature) =>
-        feature.vulnerabilities.map((vulnerability) => ({ feature, vulnerability })),
-      ),
-    ),
-    (v) => priorityFor(v.vulnerability.severity).index,
-  );
-
-  return (
-    <>
-      <SectionHeading text="Vulnerabilities" />
-      <div className="co-m-table-grid co-m-table-grid--bordered">
-        <div className="row co-m-table-grid__head">
-          <div className="col-lg-3 col-md-3 col-sm-4 col-xs-6">
-            {t('container-security~Vulnerability')}
-          </div>
-          <div className="col-lg-2 col-md-2 col-sm-5 col-xs-6">
-            {t('container-security~Severity')}
-          </div>
-          <div className="col-lg-2 col-md-2 col-sm-3 hidden-xs">
-            {t('container-security~Package')}
-          </div>
-          <div className="col-lg-2 col-md-2 hidden-sm hidden-xs">
-            {t('container-security~Current Version')}
-          </div>
-          <div className="col-lg-3 col-md-3 hidden-sm hidden-xs">
-            {t('container-security~Fixed in Version')}
-          </div>
-        </div>
-        <div className="co-m-table-grid__body">
-          {vulnerabilites.map(({ feature, vulnerability }) => (
-            <ImageVulnerabilityRow
-              key={`${feature.name}-${vulnerability.name}`}
-              vulnerability={vulnerability}
-              packageName={feature.name}
-              currentVersion={feature.version}
-            />
-          ))}
-        </div>
-      </div>
-    </>
-  );
-};
-
-export const ImageManifestVulnDetails: React.FC<ImageManifestVulnDetailsProps> = (props) => {
-  const { t } = useTranslation();
-  const total = props.obj.spec.features.reduce((sum, f) => sum + f.vulnerabilities.length, 0);
-
-  return (
-    <>
-      <div className="co-m-pane__body">
-        <SectionHeading text="Image Manifest Vuln Details" />
-        <div style={{ display: 'flex' }}>
-          <div className="imagemanifestvuln-details__donut">
-            <ChartDonut
-              colorScale={vulnPriority.map((priority) => priority.color.value).toArray()}
-              data={vulnPriority
-                .map((priority, key) => ({
-                  label: priority.title,
-                  x: priority.value,
-                  y: totalFor(key)(props.obj),
-                }))
-                .toArray()}
-              title={`${total} total`}
-            />
-          </div>
-          <div className="imagemanifestvuln-details__summary">
-            <h3>
-              {t(
-                'container-security~Quay Security Scanner has detected {{total, number}} vulnerabilities.',
-                { total },
-              )}
-            </h3>
-            <h4>
-              {t(
-                'container-security~Patches are available for {{fixableCount, number}} vulnerabilities.',
-                {
-                  fixableCount: props.obj.status.fixableCount,
-                },
-              )}
-            </h4>
-            <div className="imagemanifestvuln-details__summary-list">
-              {vulnPriority
-                .map((v, k) =>
-                  totalFor(k)(props.obj) > 0 ? (
-                    <span style={{ margin: '5px' }} key={v.index}>
-                      <SecurityIcon color={v.color.value} />
-                      &nbsp;<strong>{totalFor(k)(props.obj)}</strong>{' '}
-                      {t('container-security~{{title}} vulnerabilities', { title: v.title })}.
-                    </span>
-                  ) : null,
-                )
-                .toArray()}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="co-m-pane__body">
-        <div className="row">
-          <div className="col-sm-6">
-            <ResourceSummary resource={props.obj} />
-          </div>
-          <div className="col-sm-6">
-            <dl className="co-m-pane__details">
-              <DetailsItem label="Registry" obj={props.obj} path="spec.image" />
-            </dl>
-          </div>
-        </div>
-      </div>
-      <div className="co-m-pane__body">
-        <ImageVulnerabilitiesTable features={props.obj.spec.features} />
-      </div>
-    </>
-  );
-};
+    <div className="imagevulnerabilitieslist-wrapper">
+      <ImageVulnerabilitiesList {...props} />
+    </div>
+  </>
+);
 
 export const AffectedPods: React.FC<AffectedPodsProps> = (props) => {
   const affectedPodsFor = (pods: PodKind[]) =>
@@ -527,16 +420,6 @@ export type AffectedPodsProps = {
   obj: ImageManifestVuln;
 };
 
-export type ImageVulnerabilitiesTableProps = {
-  features: Feature[];
-};
-
-export type ImageVulnerabilityRowProps = {
-  vulnerability: Vulnerability;
-  currentVersion: string;
-  packageName: string;
-};
-
 export type ImageManifestVulnPodTabProps = {
   match: match<{ ns: string; name: string }>;
   obj: PodKind;
@@ -545,7 +428,5 @@ export type ImageManifestVulnPodTabProps = {
 ImageManifestVulnPage.displayName = 'ImageManifestVulnPage';
 ImageManifestVulnList.displayName = 'ImageManifestVulnList';
 AffectedPods.displayName = 'AffectedPods';
-ImageVulnerabilitiesTable.displayName = 'ImageVulnerabilitiesTable';
-ImageVulnerabilityRow.displayName = 'ImageVulnerabilityRow';
 ImageManifestVulnPodTab.displayName = 'ImageManifestVulnPodTab';
 ContainerVulnerabilities.displayName = 'ContainerVulnerabilities';

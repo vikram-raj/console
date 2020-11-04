@@ -1,13 +1,3 @@
-.imagemanifestvuln-details__donut {
-  padding: 30px;
-  width: 20%;
-}
-
-.imagemanifestvuln-details__summary {
-  width: 80%;
-}
-
-.imagemanifestvuln-details__summary-list {
-  display: flex;
-  flex-direction: column;
+.imagevulnerabilitieslist-wrapper {
+  border-top: var(--pf-global--BorderWidth--sm) solid var(--pf-global--BorderColor--100);
 }
