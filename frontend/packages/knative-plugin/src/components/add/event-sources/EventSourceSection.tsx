@@ -90,7 +90,7 @@ const EventSourceSection: React.FC<EventSourceSectionProps> = ({
     case EventSources.KameletBinding:
       EventSource = (
         <DynamicFormField
-          name="formData.data"
+          name="formData.data.KameletBinding.source.properties"
           schema={values.formSchema}
           uiSchema={getUISchema(values.formSchema)}
         />

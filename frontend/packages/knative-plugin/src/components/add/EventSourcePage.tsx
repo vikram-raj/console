@@ -48,10 +48,13 @@ const EventSourcePage: React.FC<EventSourcePageProps> = ({ match, location }) =>
       </PageHeading>
       <PageBody flexLayout>
         <EventSourceAlert
-          eventSourceStatus={eventSourceStatus}
+          eventSourceStatus={{
+            ...eventSourceStatus,
+            loaded: eventSourceStatus.loaded || kameletLoaded,
+          }}
           showSourceKindAlert={showCatalog && !isSourceKindPresent}
         />
-        {eventSourceStatus?.loaded || kameletLoaded ? (
+        {isSourceKindPresent ? (
           <ConnectedEventSource
             namespace={namespace}
             eventSourceStatus={eventSourceStatus}

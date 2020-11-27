@@ -42,6 +42,7 @@ import {
   EventSourceKafkaModel,
   EventSourceCronJobModel,
   KameletModel,
+  CamelKameletBindingModel,
 } from '../models';
 import { EVENT_SOURCE_LABEL } from '../const';
 
@@ -154,7 +155,7 @@ export const getCatalogEventSourceResource = (
   }
 };
 
-export const getEventSourceData = (source: string) => {
+export const getEventSourceData = (source: string, kameletData?: K8sResourceKind) => {
   const eventSourceData = {
     [EventSources.CronJobSource]: {
       data: '',
@@ -218,11 +219,13 @@ export const getEventSourceData = (source: string) => {
     [EventSources.KameletBinding]: {
       source: {
         ref: {
-          apiVersion: '',
-          kind: '',
-          name: '',
-          properties: {},
+          apiVersion:
+            kameletData?.apiVersion ||
+            `${CamelKameletBindingModel.apiGroup}/${CamelKameletBindingModel.apiVersion}`,
+          kind: kameletData?.kind || CamelKameletBindingModel.kind,
+          name: kameletData?.metadata?.name || '',
         },
+        properties: {},
       },
     },
   };

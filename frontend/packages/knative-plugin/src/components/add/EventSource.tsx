@@ -36,6 +36,7 @@ import {
   EVENT_SOURCES_APP,
 } from './import-types';
 import EventSourceMetaDescription from './EventSourceMetadataDescription';
+import { CamelKameletBindingModel } from '../../models';
 
 interface EventSourceProps {
   namespace: string;
@@ -73,11 +74,14 @@ export const EventSource: React.FC<Props> = ({
     const selDataModel = _.find(getEventSourceModels(), { kind: sourceKind });
     selApiVersion = selDataModel
       ? `${selDataModel?.apiGroup}/${selDataModel?.apiVersion}`
+      : sourceKind === CamelKameletBindingModel.kind
+      ? `${CamelKameletBindingModel.apiGroup}/${CamelKameletBindingModel.apiVersion}`
       : `${KNATIVE_EVENT_SOURCE_APIGROUP}/v1alpha2`;
     sourceData =
       isKnownEventSource(sourceKind) || kameletSource
-        ? { [sourceKind]: getEventSourceData(sourceKind) }
+        ? { [sourceKind]: getEventSourceData(sourceKind, kameletSource) }
         : {};
+    // TODO: can update name based on name of kamelete and prefix kamelet
     selSourceName = _.kebabCase(sourceKind);
   }
   const [sinkGroupVersionKind = '', sinkName = ''] = contextSource?.split('/') ?? [];
