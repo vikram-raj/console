@@ -25,6 +25,7 @@ interface OwnProps {
   namespace: string;
   eventSourceStatus: EventSourceListData | null;
   eventSourceMetaDescription: React.ReactNode;
+  kameletSource: K8sResourceKind;
 }
 
 const CatalogEventSourceForm: React.FC<FormikProps<FormikValues> & OwnProps> = ({
@@ -39,6 +40,7 @@ const CatalogEventSourceForm: React.FC<FormikProps<FormikValues> & OwnProps> = (
   namespace,
   eventSourceStatus,
   eventSourceMetaDescription,
+  kameletSource,
 }) => {
   const { t } = useTranslation();
   const yamlEditor = <YAMLEditorField name="yamlData" onSave={handleSubmit} />;
@@ -88,7 +90,7 @@ const CatalogEventSourceForm: React.FC<FormikProps<FormikValues> & OwnProps> = (
 
   const formEditor = (
     <>
-      {eventSourceStatus && !_.isEmpty(eventSourceStatus.eventSourceList) && (
+      {((eventSourceStatus && !_.isEmpty(eventSourceStatus.eventSourceList)) || kameletSource) && (
         <div className="row">
           <div className="col-sm-12 col-md-4 col-md-push-8 col-lg-5 col-lg-push-7">
             {eventSourceMetaDescription}
@@ -116,7 +118,7 @@ const CatalogEventSourceForm: React.FC<FormikProps<FormikValues> & OwnProps> = (
   );
   return (
     <FlexForm onSubmit={handleSubmit}>
-      {isDynamicEventSourceKind(values.formData.type) && (
+      {(isDynamicEventSourceKind(values.formData.type) || kameletSource) && (
         <SyncedEditorField
           name="editorType"
           formContext={{

@@ -10,7 +10,7 @@ import NamespacedPage, {
 import { QUERY_PROPERTIES } from '@console/dev-console/src/const';
 import ConnectedEventSource from './EventSource';
 import EventSourceAlert from './EventSourceAlert';
-import { useEventSourceList } from '../../utils/create-eventsources-utils';
+import { useEventSourceList, useGetKamelet } from '../../utils/create-eventsources-utils';
 import { isDynamicEventSourceKind } from '../../utils/fetch-dynamic-eventsources-utils';
 
 type EventSourcePageProps = RouteComponentProps<{ ns?: string }>;
@@ -22,8 +22,10 @@ const EventSourcePage: React.FC<EventSourcePageProps> = ({ match, location }) =>
   const searchParams = new URLSearchParams(location.search);
   const showCatalog = location.pathname.includes('/extensible-catalog/');
   const sourceKindProp = showCatalog && searchParams.get('sourceKind');
-  const isSourceKindPresent = sourceKindProp && isDynamicEventSourceKind(sourceKindProp);
-
+  const kameletName = showCatalog && sourceKindProp && searchParams.get('kameletName');
+  const [kamelet, kameletLoaded] = useGetKamelet(kameletName, namespace);
+  const isSourceKindPresent =
+    (sourceKindProp && isDynamicEventSourceKind(sourceKindProp)) || (kameletName && kameletLoaded);
   return (
     <NamespacedPage disabled variant={NamespacedPageVariants.light}>
       <Helmet>
@@ -49,7 +51,7 @@ const EventSourcePage: React.FC<EventSourcePageProps> = ({ match, location }) =>
           eventSourceStatus={eventSourceStatus}
           showSourceKindAlert={showCatalog && !isSourceKindPresent}
         />
-        {eventSourceStatus?.loaded ? (
+        {eventSourceStatus?.loaded || kameletLoaded ? (
           <ConnectedEventSource
             namespace={namespace}
             eventSourceStatus={eventSourceStatus}
@@ -57,6 +59,7 @@ const EventSourcePage: React.FC<EventSourcePageProps> = ({ match, location }) =>
             selectedApplication={searchParams.get(QUERY_PROPERTIES.APPLICATION)}
             contextSource={searchParams.get(QUERY_PROPERTIES.CONTEXT_SOURCE)}
             sourceKind={searchParams.get('sourceKind')}
+            kameletSource={kamelet}
           />
         ) : (
           <LoadingInline />

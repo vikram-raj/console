@@ -44,6 +44,7 @@ interface EventSourceProps {
   contextSource?: string;
   selectedApplication?: string;
   sourceKind?: string;
+  kameletSource?: K8sResourceKind;
 }
 
 interface StateProps {
@@ -61,6 +62,7 @@ export const EventSource: React.FC<Props> = ({
   contextSource,
   perspective,
   sourceKind = '',
+  kameletSource,
 }) => {
   const perpectiveExtension = useExtensions<Perspective>(isPerspective);
   const { t } = useTranslation();
@@ -72,9 +74,10 @@ export const EventSource: React.FC<Props> = ({
     selApiVersion = selDataModel
       ? `${selDataModel?.apiGroup}/${selDataModel?.apiVersion}`
       : `${KNATIVE_EVENT_SOURCE_APIGROUP}/v1alpha2`;
-    sourceData = isKnownEventSource(sourceKind)
-      ? { [sourceKind]: getEventSourceData(sourceKind) }
-      : {};
+    sourceData =
+      isKnownEventSource(sourceKind) || kameletSource
+        ? { [sourceKind]: getEventSourceData(sourceKind) }
+        : {};
     selSourceName = _.kebabCase(sourceKind);
   }
   const [sinkGroupVersionKind = '', sinkName = ''] = contextSource?.split('/') ?? [];
@@ -86,7 +89,6 @@ export const EventSource: React.FC<Props> = ({
   const eventSourceMetaDescription = (
     <EventSourceMetaDescription eventSourceStatus={eventSourceStatus} sourceKind={sourceKind} />
   );
-
   const catalogInitialValues: EventSourceSyncFormData = {
     editorType: EditorType.Form,
     showCanUseYAMLMessage: true,
@@ -115,6 +117,10 @@ export const EventSource: React.FC<Props> = ({
       data: sourceData,
     },
     yamlData: '',
+    formSchema: {
+      required: kameletSource?.spec?.definition?.required,
+      properties: kameletSource?.spec?.definition?.properties,
+    },
   };
 
   const createResources = (rawFormData: any): Promise<K8sResourceKind> => {
@@ -152,31 +158,34 @@ export const EventSource: React.FC<Props> = ({
   };
 
   return (
-    <Formik
-      initialValues={catalogInitialValues}
-      onSubmit={handleSubmit}
-      onReset={history.goBack}
-      validateOnBlur={false}
-      validateOnChange={false}
-      validationSchema={eventSourceValidationSchema(t)}
-    >
-      {(formikProps) =>
-        showCatalog ? (
-          <CatalogEventSourceForm
-            {...formikProps}
-            namespace={namespace}
-            eventSourceStatus={eventSourceStatus}
-            eventSourceMetaDescription={eventSourceMetaDescription}
-          />
-        ) : (
-          <EventSourceForm
-            {...formikProps}
-            namespace={namespace}
-            eventSourceStatus={eventSourceStatus}
-          />
-        )
-      }
-    </Formik>
+    kameletSource && (
+      <Formik
+        initialValues={catalogInitialValues}
+        onSubmit={handleSubmit}
+        onReset={history.goBack}
+        validateOnBlur={false}
+        validateOnChange={false}
+        validationSchema={eventSourceValidationSchema(t)}
+      >
+        {(formikProps) =>
+          showCatalog ? (
+            <CatalogEventSourceForm
+              {...formikProps}
+              namespace={namespace}
+              eventSourceStatus={eventSourceStatus}
+              eventSourceMetaDescription={eventSourceMetaDescription}
+              kameletSource={kameletSource}
+            />
+          ) : (
+            <EventSourceForm
+              {...formikProps}
+              namespace={namespace}
+              eventSourceStatus={eventSourceStatus}
+            />
+          )
+        }
+      </Formik>
+    )
   );
 };
 

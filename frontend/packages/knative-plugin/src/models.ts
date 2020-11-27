@@ -334,3 +334,17 @@ export const CamelKameletBindingModel: K8sKind = {
   crd: true,
   color: knativeEventingColor.value,
 };
+
+export const KameletModel: K8sKind = {
+  apiGroup: CAMEL_APIGROUP,
+  apiVersion: 'v1alpha1',
+  kind: 'Kamelet',
+  label: 'Kamelet',
+  labelPlural: 'Kamelets',
+  plural: 'kamelets',
+  id: 'kamelet',
+  abbr: 'K',
+  namespaced: true,
+  crd: true,
+  color: knativeEventingColor.value,
+};

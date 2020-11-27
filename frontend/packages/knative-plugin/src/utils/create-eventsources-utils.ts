@@ -7,7 +7,10 @@ import {
   modelFor,
   K8sKind,
 } from '@console/internal/module/k8s';
-import { useK8sWatchResource } from '@console/internal/components/utils/k8s-watch-hook';
+import {
+  useK8sWatchResource,
+  useK8sWatchResources,
+} from '@console/internal/components/utils/k8s-watch-hook';
 import { checkAccess, history } from '@console/internal/components/utils';
 import { safeYAMLToJS } from '@console/shared/src/utils/yaml';
 import { parseALMExamples, ClusterServiceVersionKind } from '@console/operator-lifecycle-manager';
@@ -38,6 +41,7 @@ import {
   EventSourcePingModel,
   EventSourceKafkaModel,
   EventSourceCronJobModel,
+  KameletModel,
 } from '../models';
 import { EVENT_SOURCE_LABEL } from '../const';
 
@@ -208,6 +212,16 @@ export const getEventSourceData = (source: string) => {
               env: [],
             },
           ],
+        },
+      },
+    },
+    [EventSources.KameletBinding]: {
+      source: {
+        ref: {
+          apiVersion: '',
+          kind: '',
+          name: '',
+          properties: {},
         },
       },
     },
@@ -435,4 +449,25 @@ export const handleRedirect = (
   const perspectiveData = perspectiveExtensions.find((item) => item.properties.id === perspective);
   const redirectURL = perspectiveData.properties.getImportRedirectURL(project);
   history.push(redirectURL);
+};
+
+export const useGetKamelet = (kameletName: string, namespace: string) => {
+  const resource = useK8sWatchResources({
+    kameletResource: {
+      kind: referenceForModel(KameletModel),
+      name: kameletName,
+      namespace,
+      optional: true,
+      selector: {
+        matchLabels: {
+          'camel.apache.org/kamelet.type': 'source',
+        },
+      },
+    },
+  });
+  return [
+    resource.kameletResource.data,
+    resource.kameletResource.loaded,
+    resource.kameletResource.loadError,
+  ];
 };
