@@ -4,8 +4,7 @@ import * as _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import { useDispatch } from 'react-redux';
-import { history, StatusBox, LoadingBox } from '@console/internal/components/utils';
-import { ALL_NAMESPACES_KEY } from '@console/shared';
+import { StatusBox, LoadingBox } from '@console/internal/components/utils';
 import NamespacedPage, { NamespacedPageVariants } from '../../NamespacedPage';
 import {
   AlertsDetailsPage,
@@ -15,6 +14,7 @@ import { getAlertsAndRules } from '@console/internal/components/monitoring/utils
 import { alertingRuleStateOrder } from '@console/internal/reducers/monitoring';
 import { monitoringSetRules, monitoringLoaded } from '@console/internal/actions/ui';
 import { usePrometheusRulesPoll } from '@console/internal/components/graphs/prometheus-rules-hook';
+import { handleNamespaceChange } from './monitoring-alerts-utils';
 
 interface MonitoringAlertsDetailsPageProps {
   match: RMatch<{
@@ -26,14 +26,6 @@ interface MonitoringAlertsDetailsPageProps {
 const ALERT_DETAILS_PATH = '/dev-monitoring/ns/:ns/alerts/:ruleID';
 const RULE_DETAILS_PATH = '/dev-monitoring/ns/:ns/rules/:id';
 
-const handleNamespaceChange = (newNamespace: string): void => {
-  if (newNamespace === ALL_NAMESPACES_KEY) {
-    history.push('/dev-monitoring/all-namespaces');
-  } else {
-    history.push('/dev-monitoring/ns/:ns/alerts');
-  }
-};
-
 const MonitoringAlertsDetailsPage: React.FC<MonitoringAlertsDetailsPageProps> = ({ match }) => {
   const namespace = match.params.ns;
   const { path } = match;
@@ -43,7 +35,6 @@ const MonitoringAlertsDetailsPage: React.FC<MonitoringAlertsDetailsPageProps> = 
     () => (!loading && !loadError ? getAlertsAndRules(response?.data) : { rules: [], alerts: [] }),
     [response, loadError, loading],
   );
-
   React.useEffect(() => {
     const sortThanosRules = _.sortBy(thanosAlertsAndRules.rules, alertingRuleStateOrder);
     dispatch(monitoringSetRules('devRules', sortThanosRules, 'dev'));

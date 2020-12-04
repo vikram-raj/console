@@ -99,8 +99,13 @@ const ruleURL = (rule: Rule) => `${RuleResource.plural}/${_.get(rule, 'id')}`;
 const pollers = {};
 const pollerTimeouts = {};
 
-const silenceAlert = (alert: Alert) => ({
-  callback: () => history.replace(`${SilenceResource.plural}/~new?${labelsToParams(alert.labels)}`),
+const silenceAlert = (alert: Alert, namespace?: string) => ({
+  callback: () =>
+    namespace
+      ? history.replace(
+          `/dev-monitoring/ns/${namespace}/silences/~new?${labelsToParams(alert.labels)}`,
+        )
+      : history.replace(`${SilenceResource.plural}/~new?${labelsToParams(alert.labels)}`),
   label: 'Silence Alert',
 });
 
@@ -109,9 +114,11 @@ const viewAlertRule = (alert: Alert) => ({
   href: ruleURL(alert.rule),
 });
 
-const editSilence = (silence: Silence) => ({
+const editSilence = (silence: Silence, namespace: string) => ({
   label: silenceState(silence) === SilenceStates.Expired ? 'Recreate Silence' : 'Edit Silence',
-  href: `${SilenceResource.plural}/${silence.id}/edit`,
+  href: namespace
+    ? `/dev-monitoring/ns/${namespace}/silences/${silence.id}/edit`
+    : `${SilenceResource.plural}/${silence.id}/edit`,
 });
 
 const cancelSilence = (silence: Silence) => ({
@@ -128,16 +135,16 @@ const cancelSilence = (silence: Silence) => ({
     }),
 });
 
-const silenceMenuActions = (silence: Silence) =>
+const silenceMenuActions = (silence: Silence, namespace?: string) =>
   silenceState(silence) === SilenceStates.Expired
-    ? [editSilence(silence)]
-    : [editSilence(silence), cancelSilence(silence)];
+    ? [editSilence(silence, namespace)]
+    : [editSilence(silence, namespace), cancelSilence(silence)];
 
 const SilenceKebab = ({ silence }) => <Kebab options={silenceMenuActions(silence)} />;
 
-const SilenceActionsMenu = ({ silence }) => (
+const SilenceActionsMenu = ({ silence, namespace }) => (
   <div className="co-actions" data-test-id="details-actions">
-    <ActionsMenu actions={silenceMenuActions(silence)} />
+    <ActionsMenu actions={silenceMenuActions(silence, namespace)} />
   </div>
 );
 
@@ -636,7 +643,7 @@ export const AlertsDetailsPage = withFallback(
               </div>
               {state !== AlertStates.Silenced && (
                 <div className="co-actions" data-test-id="details-actions">
-                  <ActionButtons actionButtons={[silenceAlert(alert)]} />
+                  <ActionButtons actionButtons={[silenceAlert(alert, namespace)]} />
                 </div>
               )}
             </h1>
@@ -998,7 +1005,7 @@ const SilencedAlertsList = ({ alerts }) => {
   );
 };
 
-const SilencesDetailsPage = withFallback(
+export const SilencesDetailsPage = withFallback(
   connect(silenceParamToProps)((props: SilencesDetailsPageProps) => {
     const { alertsLoaded, loaded, loadError, namespace, silence } = props;
     const {
@@ -1012,7 +1019,6 @@ const SilencesDetailsPage = withFallback(
       updatedAt = '',
     } = silence || {};
     const { t } = useTranslation();
-
     return (
       <>
         <Helmet>
@@ -1030,7 +1036,7 @@ const SilencesDetailsPage = withFallback(
                 {
                   name: t('monitoring~Silences'),
                   path: namespace
-                    ? `/dev-monitoring/ns/${namespace}/silences`
+                    ? `/dev-monitoring/ns/${namespace}/alerts`
                     : '/monitoring/silences',
                 },
                 { name: t('monitoring~Silence details'), path: undefined },
@@ -1044,7 +1050,7 @@ const SilencesDetailsPage = withFallback(
                 />
                 {name}
               </div>
-              <SilenceActionsMenu silence={silence} />
+              <SilenceActionsMenu silence={silence} namespace={namespace} />
             </h1>
           </div>
           <div className="co-m-pane__body">

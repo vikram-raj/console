@@ -10,7 +10,7 @@ import {
   alertStateFilter,
 } from '@console/internal/components/monitoring/alerting';
 import { RowFilter } from '@console/internal/components/filter-toolbar';
-import { Kebab } from '@console/internal/components/utils';
+import { Kebab, history } from '@console/internal/components/utils';
 import {
   alertDescription,
   alertState,
@@ -18,7 +18,7 @@ import {
   alertingRuleStateOrder,
 } from '@console/internal/reducers/monitoring';
 import { Alert, Rule, AlertStates } from '@console/internal/components/monitoring/types';
-import { YellowExclamationTriangleIcon } from '@console/shared';
+import { ALL_NAMESPACES_KEY, YellowExclamationTriangleIcon } from '@console/shared';
 import { labelsToParams } from '@console/internal/components/monitoring/utils';
 import SilenceAlert from './SilenceAlert';
 
@@ -136,4 +136,12 @@ export const applyListSort = (rules: Rule[], orderBy: SortByDirection, func: str
     return setOrderBy(orderBy, sorted);
   }
   return rules;
+};
+
+export const handleNamespaceChange = (newNamespace: string): void => {
+  if (newNamespace === ALL_NAMESPACES_KEY) {
+    history.push('/dev-monitoring/all-namespaces');
+  } else {
+    history.push('/dev-monitoring/ns/:ns/alerts');
+  }
 };

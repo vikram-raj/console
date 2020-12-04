@@ -452,6 +452,45 @@ const plugin: Plugin<ConsumedExtensions> = [
   {
     type: 'Page/Route',
     properties: {
+      exact: true,
+      path: ['/dev-monitoring/ns/:ns/silences/~new'],
+      loader: async () =>
+        (
+          await import(
+            './components/monitoring/alerts/MonitoringCreateSilence' /* webpackChunkName: "dev-console-monitoring-create-silence" */
+          )
+        ).default,
+    },
+  },
+  {
+    type: 'Page/Route',
+    properties: {
+      exact: true,
+      path: ['/dev-monitoring/ns/:ns/silences/:id'],
+      loader: async () =>
+        (
+          await import(
+            './components/monitoring/alerts/MonitoringSilenceDetailsPage' /* webpackChunkName: "dev-console-monitoring-silence" */
+          )
+        ).default,
+    },
+  },
+  {
+    type: 'Page/Route',
+    properties: {
+      exact: true,
+      path: ['/dev-monitoring/ns/:ns/silences/:id/edit'],
+      loader: async () =>
+        (
+          await import(
+            './components/monitoring/alerts/MonitoringEditSilence' /* webpackChunkName: "dev-console-monitoring-edit-silence" */
+          )
+        ).default,
+    },
+  },
+  {
+    type: 'Page/Route',
+    properties: {
       exact: false,
       path: ['/dev-monitoring/ns/:ns/rules/:id'],
       loader: async () =>

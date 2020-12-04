@@ -58,7 +58,7 @@ const durationOff = '-';
 const durations = [durationOff, '30m', '1h', '2h', '6h', '12h', '1d', '2d', '1w'];
 const durationItems = _.zipObject(durations, durations);
 
-const SilenceForm_: React.FC<SilenceFormProps> = ({ defaults, Info, title }) => {
+const SilenceForm_: React.FC<SilenceFormProps> = ({ defaults, Info, title, namespace }) => {
   const now = new Date();
 
   // Default to starting now if we have no default start time or if the default start time is in the
@@ -154,7 +154,11 @@ const SilenceForm_: React.FC<SilenceFormProps> = ({ defaults, Info, title }) => 
       .then(({ silenceID }) => {
         setError(undefined);
         refreshNotificationPollers();
-        history.push(`${SilenceResource.plural}/${encodeURIComponent(silenceID)}`);
+        namespace
+          ? history.push(
+              `/dev-monitoring/ns/${namespace}/silences/${encodeURIComponent(silenceID)}`,
+            )
+          : history.push(`${SilenceResource.plural}/${encodeURIComponent(silenceID)}`);
       })
       .catch((err) => {
         setError(_.get(err, 'json.error') || err.message || 'Error saving Silence');
@@ -352,39 +356,43 @@ const EditInfo = () => (
   </Alert>
 );
 
-export const EditSilence = connect(silenceParamToProps)(({ loaded, loadError, silence }) => {
-  const isExpired = silenceState(silence) === SilenceStates.Expired;
-  const defaults = _.pick(silence, [
-    'comment',
-    'createdBy',
-    'endsAt',
-    'id',
-    'matchers',
-    'startsAt',
-  ]);
-  defaults.startsAt = isExpired ? undefined : formatDate(new Date(defaults.startsAt));
-  defaults.endsAt = isExpired ? undefined : formatDate(new Date(defaults.endsAt));
-  return (
-    <StatusBox data={silence} label={SilenceResource.label} loaded={loaded} loadError={loadError}>
-      <SilenceForm
-        defaults={defaults}
-        Info={isExpired ? undefined : EditInfo}
-        title={isExpired ? 'Recreate Silence' : 'Edit Silence'}
-      />
-    </StatusBox>
-  );
-});
+export const EditSilence = connect(silenceParamToProps)(
+  ({ loaded, loadError, silence, namespace }) => {
+    const isExpired = silenceState(silence) === SilenceStates.Expired;
+    const defaults = _.pick(silence, [
+      'comment',
+      'createdBy',
+      'endsAt',
+      'id',
+      'matchers',
+      'startsAt',
+    ]);
+    defaults.startsAt = isExpired ? undefined : formatDate(new Date(defaults.startsAt));
+    defaults.endsAt = isExpired ? undefined : formatDate(new Date(defaults.endsAt));
+    return (
+      <StatusBox data={silence} label={SilenceResource.label} loaded={loaded} loadError={loadError}>
+        <SilenceForm
+          defaults={defaults}
+          Info={isExpired ? undefined : EditInfo}
+          title={isExpired ? 'Recreate Silence' : 'Edit Silence'}
+          namespace={namespace}
+        />
+      </StatusBox>
+    );
+  },
+);
 
-const CreateSilence_ = ({ createdBy }) => {
+const CreateSilence_ = ({ createdBy, namespace }) => {
   const matchers = _.map(getURLSearchParams(), (value, name) => ({ name, value, isRegex: false }));
   return _.isEmpty(matchers) ? (
-    <SilenceForm defaults={{ createdBy }} title="Create Silence" />
+    <SilenceForm defaults={{ createdBy }} namespace={namespace} title="Create Silence" />
   ) : (
-    <SilenceForm defaults={{ createdBy, matchers }} title="Silence Alert" />
+    <SilenceForm defaults={{ createdBy, matchers }} namespace={namespace} title="Silence Alert" />
   );
 };
-const createSilenceStateToProps = ({ UI }: RootState) => ({
+const createSilenceStateToProps = ({ UI }: RootState, { match }) => ({
   createdBy: UI.get('user')?.metadata?.name,
+  namespace: match?.params?.ns,
 });
 export const CreateSilence = connect(createSilenceStateToProps)(CreateSilence_);
 
@@ -392,4 +400,5 @@ type SilenceFormProps = {
   defaults: any;
   Info?: React.ComponentType<{}>;
   title: string;
+  namespace?: string;
 };
