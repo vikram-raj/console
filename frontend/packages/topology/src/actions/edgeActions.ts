@@ -9,6 +9,8 @@ import {
   TYPE_KNATIVE_SERVICE,
   TYPE_EVENT_PUB_SUB,
   TYPE_REVISION_TRAFFIC,
+  TYPE_KAFKA_CONNECTION,
+  TYPE_KAFKA_CONNECTION_LINK,
 } from '@console/knative-plugin/src/topology/const';
 import { getResource } from '../utils/topology-utils';
 import { TYPE_CONNECTS_TO, TYPE_SERVICE_BINDING, TYPE_TRAFFIC_CONNECTOR } from '../const';
@@ -72,6 +74,8 @@ export const edgeActions = (edge: Edge, nodes: Node[]): KebabOption[] => {
           return false;
         case TYPE_TRAFFIC_CONNECTOR:
           return false;
+        case TYPE_KAFKA_CONNECTION_LINK:
+          return n.getType() === TYPE_KAFKA_CONNECTION;
         default:
           return true;
       }

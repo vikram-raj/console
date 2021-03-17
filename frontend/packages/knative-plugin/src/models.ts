@@ -367,3 +367,16 @@ export const CamelIntegrationPlatformModel: K8sKind = {
   color: knativeEventingColor.value,
   badge: BadgeType.TECH,
 };
+
+export const ManagedKafkaConnectionModel: K8sKind = {
+  apiGroup: 'rhoas.redhat.com',
+  apiVersion: 'v1alpha1',
+  kind: 'KafkaConnection',
+  id: 'kafkaconnection',
+  plural: 'kafkaconnections',
+  label: 'Kafka Connection',
+  labelPlural: 'Kafka Connections',
+  abbr: 'KC',
+  namespaced: true,
+  crd: true,
+};

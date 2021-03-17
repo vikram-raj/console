@@ -8,6 +8,7 @@ import {
 import { GraphData } from '@console/topology/src/topology-types';
 import { getResource } from '@console/topology/src/utils';
 import { referenceForModel } from '@console/internal/module/k8s';
+import { errorModal } from '@console/internal/components/modals';
 import { addEventSource } from '../actions/add-event-source';
 import { addTrigger } from '../actions/add-trigger';
 import { addChannels } from '../actions/add-channel';
@@ -20,6 +21,7 @@ import {
   EventingSubscriptionModel,
   EventingTriggerModel,
 } from '../models';
+import { createEventSourceKafkaConnection } from './knative-topology-utils';
 
 export const getKnativeContextMenuAction = (
   graphData: GraphData,
@@ -62,7 +64,21 @@ const createPubSubConnector = (source: Node, target: Node) => {
   ).then(() => null);
 };
 
+const createKafkaConnection = (source, target) =>
+  createEventSourceKafkaConnection(source, target)
+    .then(() => null)
+    .catch((error) => {
+      errorModal({
+        title: 'Error moving event source kafka connector',
+        error: error.message,
+        showIcon: true,
+      });
+    });
+
 export const getCreateConnector = (createHints: string[]) => {
+  if (createHints.includes('createKafkaConnection')) {
+    return createKafkaConnection;
+  }
   if (createHints.includes('createTrigger') || createHints.includes('createSubscription')) {
     return createPubSubConnector;
   }

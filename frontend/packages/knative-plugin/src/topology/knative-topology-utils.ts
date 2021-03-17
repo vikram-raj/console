@@ -47,6 +47,8 @@ import {
   EventingTriggerModel,
   CamelKameletBindingModel,
   EventSourceSinkBindingModel,
+  ManagedKafkaConnectionModel,
+  EventSourceKafkaModel,
 } from '../models';
 import {
   NodeType,
@@ -93,6 +95,16 @@ export const getKnNodeModelProps = (type: string) => {
         },
       };
     case NodeType.SinkUri:
+      return {
+        width: NODE_WIDTH * 0.75,
+        height: NODE_HEIGHT * 0.75,
+        visible: true,
+        shape: NodeShape.circle,
+        style: {
+          padding: NODE_PADDING,
+        },
+      };
+    case NodeType.Kafka:
       return {
         width: NODE_WIDTH * 0.75,
         height: NODE_HEIGHT * 0.75,
@@ -826,6 +838,34 @@ export const getSubscriptionTopologyEdgeItems = (
   return edges;
 };
 
+export const getKnSourceKafkaTopologyEdgeItems = (
+  kafkaSource: K8sResourceKind,
+  managedKafkaConnections,
+): EdgeModel[] => {
+  const { data } = managedKafkaConnections;
+  const edges = data.reduce((acc, managedKafkaConnection) => {
+    const mkcServiceAccountSecretName =
+      managedKafkaConnection?.spec?.credentials?.serviceAccountSecretName;
+    const kafkaSourcePasswordSecretKeyRefName =
+      kafkaSource.spec?.net?.sasl?.password?.secretKeyRef?.name;
+    const kafkaSourceUserSecretKeyRefName = kafkaSource.spec?.net?.sasl?.user?.secretKeyRef?.name;
+    if (
+      mkcServiceAccountSecretName === kafkaSourcePasswordSecretKeyRefName &&
+      mkcServiceAccountSecretName === kafkaSourceUserSecretKeyRefName
+    ) {
+      const edgeId = `${kafkaSource?.metadata?.uid}_${managedKafkaConnection?.metadata?.uid}`;
+      acc.push({
+        id: edgeId,
+        type: EdgeType.EventSourceKafkaLink,
+        source: kafkaSource?.metadata?.uid,
+        target: managedKafkaConnection?.metadata?.uid,
+      });
+    }
+    return acc;
+  }, []);
+  return edges;
+};
+
 /**
  * Form Edge data for service sources with traffic data
  */
@@ -887,6 +927,50 @@ export const createTopologyServiceNodeData = (
   };
 };
 
+const KAFKA_PROPS = {
+  width: NODE_WIDTH,
+  height: NODE_HEIGHT,
+  group: false,
+  visible: true,
+  style: {
+    padding: NODE_PADDING,
+  },
+};
+
+export const createOverviewItem = (obj: K8sResourceKind): OverviewItem<K8sResourceKind> => {
+  if (!obj.apiVersion) {
+    obj.apiVersion = apiVersionForModel(ManagedKafkaConnectionModel);
+  }
+  if (!obj.kind) {
+    obj.kind = ManagedKafkaConnectionModel.kind;
+  }
+
+  return {
+    isOperatorBackedService: true,
+    obj,
+  };
+};
+
+export const getTopologyRhoasNodes = (kafkaConnections: K8sResourceKind[], type): NodeModel[] => {
+  const nodes = [];
+  for (const obj of kafkaConnections) {
+    const data: TopologyDataObject = {
+      id: obj.metadata.uid,
+      name: obj.metadata.name,
+      type,
+      resource: obj,
+      // resources is poorly named, should be overviewItem, eventually going away.
+      resources: createOverviewItem(obj),
+      data: {
+        resource: obj,
+      },
+    };
+    nodes.push(getTopologyNodeItem(obj, type, data, KAFKA_PROPS));
+  }
+
+  return nodes;
+};
+
 export const createTopologyPubSubNodeData = (
   resource: K8sResourceKind,
   res: OverviewItem,
@@ -944,6 +1028,50 @@ const getOwnedEventSourceData = (
   };
 };
 
+const sinkURIDataModel = (resource, resources, data, knDataModel) => {
+  // form node data for sink uri
+  const sinkUri = resource.spec?.sink?.uri;
+  let sinkTargetUid = getSinkTargetUid(knDataModel.nodes, sinkUri);
+  if (sinkUri) {
+    if (!sinkTargetUid) {
+      sinkTargetUid = encodeURIComponent(sinkUri);
+      const eventSourcesData = getEventSourcesData(sinkUri, resources);
+      const sinkUriObj = {
+        metadata: {
+          uid: sinkTargetUid,
+          namespace: data.resources.obj.metadata.namespace || '',
+        },
+        spec: { sinkUri },
+        type: { nodeType: NodeType.SinkUri },
+        kind: 'URI',
+      };
+      const sinkData: KnativeTopologyDataObject<KnativeServiceOverviewItem> = {
+        id: sinkTargetUid,
+        name: 'URI',
+        type: NodeType.SinkUri,
+        resources: { ...data.resources, obj: sinkUriObj, eventSources: eventSourcesData },
+        data: { ...data.data, sinkUri },
+        resource: sinkUriObj,
+      };
+      knDataModel.nodes.push(
+        ...getSinkUriTopologyNodeItems(NodeType.SinkUri, sinkTargetUid, sinkData),
+      );
+    }
+    knDataModel.edges.push(...getSinkUriTopologyEdgeItems(resource, sinkTargetUid));
+  }
+  // form connections for channels
+  if (!isInternalResource(resource)) {
+    const channelResourceProps = getDynamicChannelModelRefs();
+    _.forEach(channelResourceProps, (currentProp) => {
+      resources[currentProp] &&
+        knDataModel.edges.push(...getEventTopologyEdgeItems(resource, resources[currentProp]));
+    });
+  }
+  knDataModel.edges.push(...getEventTopologyEdgeItems(resource, resources.brokers));
+
+  return { edges: knDataModel.edges, nodes: knDataModel.nodes };
+};
+
 export const transformKnNodeData = (
   knResourcesData: K8sResourceKind[],
   type: string,
@@ -951,7 +1079,6 @@ export const transformKnNodeData = (
   utils?: KnativeUtil[],
 ): Model => {
   const knDataModel: Model = { nodes: [], edges: [] };
-
   _.forEach(knResourcesData, (res) => {
     const item = createKnativeDeploymentItems(res, resources, utils);
     switch (type) {
@@ -966,45 +1093,9 @@ export const transformKnNodeData = (
           const itemData = getOwnedEventSourceData(res, data, resources);
           knDataModel.nodes.push(...getKnativeTopologyNodeItems(res, type, itemData, resources));
           knDataModel.edges.push(...getEventTopologyEdgeItems(res, resources.ksservices));
-          // form node data for sink uri
-          const sinkUri = res.spec?.sink?.uri;
-          let sinkTargetUid = getSinkTargetUid(knDataModel.nodes, sinkUri);
-          if (sinkUri) {
-            if (!sinkTargetUid) {
-              sinkTargetUid = encodeURIComponent(sinkUri);
-              const eventSourcesData = getEventSourcesData(sinkUri, resources);
-              const sinkUriObj = {
-                metadata: {
-                  uid: sinkTargetUid,
-                  namespace: data.resources.obj.metadata.namespace || '',
-                },
-                spec: { sinkUri },
-                type: { nodeType: NodeType.SinkUri },
-                kind: 'URI',
-              };
-              const sinkData: KnativeTopologyDataObject<KnativeServiceOverviewItem> = {
-                id: sinkTargetUid,
-                name: 'URI',
-                type: NodeType.SinkUri,
-                resources: { ...data.resources, obj: sinkUriObj, eventSources: eventSourcesData },
-                data: { ...data.data, sinkUri },
-                resource: sinkUriObj,
-              };
-              knDataModel.nodes.push(
-                ...getSinkUriTopologyNodeItems(NodeType.SinkUri, sinkTargetUid, sinkData),
-              );
-            }
-            knDataModel.edges.push(...getSinkUriTopologyEdgeItems(res, sinkTargetUid));
-          }
-          // form connections for channels
-          if (!isInternalResource(res)) {
-            const channelResourceProps = getDynamicChannelModelRefs();
-            _.forEach(channelResourceProps, (currentProp) => {
-              resources[currentProp] &&
-                knDataModel.edges.push(...getEventTopologyEdgeItems(res, resources[currentProp]));
-            });
-          }
-          knDataModel.edges.push(...getEventTopologyEdgeItems(res, resources.brokers));
+          const { edges, nodes } = sinkURIDataModel(res, resources, data, knDataModel);
+          knDataModel.edges.push(...edges);
+          knDataModel.nodes.push(...nodes);
           const newGroup = getTopologyGroupItems(res);
           mergeGroup(newGroup, knDataModel.nodes);
         }
@@ -1031,6 +1122,28 @@ export const transformKnNodeData = (
           const newGroup = getTopologyGroupItems(res);
           mergeGroup(newGroup, knDataModel.nodes);
         }
+        break;
+      }
+      case NodeType.Kafka: {
+        const data = getTopologyRhoasNodes(resources?.kafkaconnections?.data ?? [], type);
+        knDataModel.nodes.push(...data);
+        const newGroup = getTopologyGroupItems(res);
+        mergeGroup(newGroup, knDataModel.nodes);
+        break;
+      }
+      case NodeType.KnSourceKafka: {
+        const data = createTopologyServiceNodeData(res, item, type);
+        knDataModel.nodes.push(...getKnativeTopologyNodeItems(res, type, data, resources));
+        knDataModel.edges.push(
+          ...getKnSourceKafkaTopologyEdgeItems(res, resources.kafkaconnections),
+          ...getEventTopologyEdgeItems(res, resources.ksservices),
+        );
+        const { edges, nodes } = sinkURIDataModel(res, resources, data, knDataModel);
+        knDataModel.edges.push(...edges);
+        knDataModel.nodes.push(...nodes);
+        knDataModel.edges.push(...getEventTopologyEdgeItems(res, resources.brokers));
+        const newGroup = getTopologyGroupItems(res);
+        mergeGroup(newGroup, knDataModel.nodes);
         break;
       }
       default:
@@ -1134,6 +1247,35 @@ export const createEventingPubSubSink = (subObj: K8sResourceKind, target: K8sRes
   };
 
   return k8sUpdate(modelFor(referenceFor(subscriptionObj)), updatePayload);
+};
+
+export const createEventSourceKafkaConnection = (
+  source: Node,
+  target: Node,
+): Promise<K8sResourceKind> => {
+  if (!source || !target || source === target) {
+    return Promise.reject();
+  }
+  const sourceObj = getResource(source);
+  const targetObj = getResource(target);
+  const mkcBoostrapServer = targetObj?.status?.bootstrapServerHost;
+  const mkcServiceAccountSecretName = targetObj?.spec?.credentials?.serviceAccountSecretName;
+  const knKafkaSourceObj = _.omit(sourceObj, 'status');
+  const updatedObjPayload = {
+    ...knKafkaSourceObj,
+    spec: {
+      bootstrapServers: [mkcBoostrapServer],
+      net: {
+        sasl: {
+          enable: true,
+          user: { secretKeyRef: { name: mkcServiceAccountSecretName, key: 'client-id' } },
+          password: { secretKeyRef: { name: mkcServiceAccountSecretName, key: 'client-secret' } },
+        },
+        tls: { enable: true },
+      },
+    },
+  };
+  return k8sUpdate(EventSourceKafkaModel, updatedObjPayload);
 };
 
 export const createSinkPubSubConnection = (
