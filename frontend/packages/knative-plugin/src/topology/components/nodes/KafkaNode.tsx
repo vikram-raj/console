@@ -10,7 +10,7 @@ const KafkaNode: React.FC<any> = ({ element, selected, onSelect, ...props }) => 
   const size = Math.min(width, height);
   const iconRadius = Math.min(width, height) * 0.25;
   const { radius, decoratorRadius } = calculateRadius(size);
-
+  const { data } = element.getData();
   return (
     <BaseNode
       className="KafkaNode"
@@ -18,7 +18,7 @@ const KafkaNode: React.FC<any> = ({ element, selected, onSelect, ...props }) => 
       icon={managedKafkaIcon}
       innerRadius={iconRadius}
       selected={selected}
-      kind="KafkaConnection"
+      kind={data.kind}
       element={element}
       decoratorRadius={decoratorRadius}
       outerRadius={radius}

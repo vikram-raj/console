@@ -376,7 +376,7 @@ export const ManagedKafkaConnectionModel: K8sKind = {
   plural: 'kafkaconnections',
   label: 'Kafka Connection',
   labelPlural: 'Kafka Connections',
-  abbr: 'AKC',
+  abbr: 'KC',
   namespaced: true,
   crd: true,
 };

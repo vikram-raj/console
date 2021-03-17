@@ -22,6 +22,7 @@ import {
   TYPE_KNATIVE_SERVICE,
   TYPE_EVENT_PUB_SUB,
   TYPE_SINK_URI,
+  TYPE_KAFKA_CONNECTION_LINK,
 } from '../const';
 import {
   createEventSourceKafkaConnection,
@@ -34,11 +35,14 @@ export const MOVE_EV_SRC_CONNECTOR_OPERATION = 'moveeventsourceconnector';
 export const MOVE_PUB_SUB_CONNECTOR_OPERATION = 'movepubsubconnector';
 export const CREATE_PUB_SUB_CONNECTOR_OPERATION = 'createpubsubconnector';
 export const MOVE_EV_SRC_KAFKA_CONNECTOR_OPERATION = 'moveeventsourcekafkaconnector';
+export const CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION = 'createeventsourcekafkaconnector';
 
 export const nodesEdgeIsDragging = (monitor, props) =>
   monitor.isDragging() &&
   (monitor.getOperation() === CREATE_CONNECTOR_OPERATION ||
     (monitor.getOperation() === CREATE_PUB_SUB_CONNECTOR_OPERATION &&
+      monitor.getItem() === props.element) ||
+    (monitor.getOperation() === CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION &&
       monitor.getItem() === props.element) ||
     (monitor.getOperation() === MOVE_EV_SRC_CONNECTOR_OPERATION &&
       monitor.getItem().getSource()) === props.element);
@@ -260,14 +264,22 @@ export const eventSourceTargetSpec: DropTargetSpec<
   }),
 };
 
-export const eventSourceKafkaDropTargetSpec: DropTargetSpec<
+export const KafkaConnectionDropTargetSpec: DropTargetSpec<
   Edge,
   any,
-  { canDrop: boolean; dropTarget: boolean; edgeDraging: boolean },
+  { canDrop: boolean; dropTarget: boolean; edgeDragging: boolean },
   NodeComponentProps
 > = {
   accept: [EDGE_DRAG_TYPE, CREATE_CONNECTOR_DROP_TYPE],
-  // canDrop: (item, monitor, props) => {
-  //   return item.getType() === 'fdf';
-  // },
+  canDrop: (item, monitor, props) =>
+    (item.getType() === TYPE_KAFKA_CONNECTION_LINK && item.getSource() !== props.element) ||
+    monitor.getOperation()?.type === CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION,
+  collect: (monitor, props) => ({
+    canDrop:
+      monitor.isDragging() &&
+      monitor.getOperation()?.type === CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION,
+    dropTarget: monitor.isOver({ shallow: true }),
+    edgeDragging: nodesEdgeIsDragging(monitor, props),
+    tooltipLabel: getKnativeTooltip(monitor),
+  }),
 };

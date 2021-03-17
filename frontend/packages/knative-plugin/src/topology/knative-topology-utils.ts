@@ -10,12 +10,7 @@ import {
 import { getOwnedResources, OverviewItem } from '@console/shared';
 import { Edge, EdgeModel, Model, Node, NodeModel, NodeShape } from '@patternfly/react-topology';
 import { TopologyDataResources, TopologyDataObject } from '@console/topology/src/topology-types';
-import {
-  NODE_WIDTH,
-  NODE_HEIGHT,
-  NODE_PADDING,
-  TYPE_CONNECTS_TO,
-} from '@console/topology/src/const';
+import { NODE_WIDTH, NODE_HEIGHT, NODE_PADDING } from '@console/topology/src/const';
 import {
   getTopologyGroupItems,
   createTopologyNodeData,
@@ -863,7 +858,7 @@ export const getKnSourceKafkaTopologyEdgeItems = (
       const edgeId = `${resource?.metadata?.uid}_${managedKafkaConnection?.metadata?.uid}`;
       edges.push({
         id: edgeId,
-        type: TYPE_CONNECTS_TO,
+        type: EdgeType.EventSourceKafkaLink,
         source: resource?.metadata?.uid,
         target: managedKafkaConnection?.metadata?.uid,
       });
@@ -957,13 +952,13 @@ export const createOverviewItem = (obj: K8sResourceKind): OverviewItem<K8sResour
   };
 };
 
-export const getTopologyRhoasNodes = (kafkaConnections: K8sResourceKind[]): NodeModel[] => {
+export const getTopologyRhoasNodes = (kafkaConnections: K8sResourceKind[], type): NodeModel[] => {
   const nodes = [];
   for (const obj of kafkaConnections) {
     const data: TopologyDataObject = {
       id: obj.metadata.uid,
       name: obj.metadata.name,
-      type: ManagedKafkaConnectionModel.kind,
+      type,
       resource: obj,
       // resources is poorly named, should be overviewItem, eventually going away.
       resources: createOverviewItem(obj),
@@ -971,7 +966,7 @@ export const getTopologyRhoasNodes = (kafkaConnections: K8sResourceKind[]): Node
         resource: obj,
       },
     };
-    nodes.push(getTopologyNodeItem(obj, ManagedKafkaConnectionModel.kind, data, KAFKA_PROPS));
+    nodes.push(getTopologyNodeItem(obj, type, data, KAFKA_PROPS));
   }
 
   return nodes;
@@ -1123,7 +1118,7 @@ export const transformKnNodeData = (
         break;
       }
       case NodeType.Kafka: {
-        const data = getTopologyRhoasNodes(resources?.kafkaconnections?.data ?? []);
+        const data = getTopologyRhoasNodes(resources?.kafkaconnections?.data ?? [], type);
         knDataModel.nodes.push(...data);
         const newGroup = getTopologyGroupItems(res);
         mergeGroup(newGroup, knDataModel.nodes);

@@ -17,7 +17,7 @@ export enum EdgeType {
   Traffic = 'revision-traffic',
   EventSource = 'event-source-link',
   EventPubSubLink = 'event-pubsub-link',
-  EventSourceKafka = 'event-source-kafka-link',
+  EventSourceKafkaLink = 'event-source-kafka-link',
 }
 
 export type RevK8sResourceKind = K8sResourceKind & {
