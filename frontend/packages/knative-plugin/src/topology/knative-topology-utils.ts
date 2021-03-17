@@ -10,7 +10,12 @@ import {
 import { getOwnedResources, OverviewItem } from '@console/shared';
 import { Edge, EdgeModel, Model, Node, NodeModel, NodeShape } from '@patternfly/react-topology';
 import { TopologyDataResources, TopologyDataObject } from '@console/topology/src/topology-types';
-import { NODE_WIDTH, NODE_HEIGHT, NODE_PADDING } from '@console/topology/src/const';
+import {
+  NODE_WIDTH,
+  NODE_HEIGHT,
+  NODE_PADDING,
+  TYPE_CONNECTS_TO,
+} from '@console/topology/src/const';
 import {
   getTopologyGroupItems,
   createTopologyNodeData,
@@ -47,6 +52,8 @@ import {
   EventingTriggerModel,
   CamelKameletBindingModel,
   EventSourceSinkBindingModel,
+  ManagedKafkaConnectionModel,
+  EventSourceKafkaModel,
 } from '../models';
 import {
   NodeType,
@@ -93,6 +100,16 @@ export const getKnNodeModelProps = (type: string) => {
         },
       };
     case NodeType.SinkUri:
+      return {
+        width: NODE_WIDTH * 0.75,
+        height: NODE_HEIGHT * 0.75,
+        visible: true,
+        shape: NodeShape.circle,
+        style: {
+          padding: NODE_PADDING,
+        },
+      };
+    case NodeType.Kafka:
       return {
         width: NODE_WIDTH * 0.75,
         height: NODE_HEIGHT * 0.75,
@@ -826,6 +843,35 @@ export const getSubscriptionTopologyEdgeItems = (
   return edges;
 };
 
+export const getKnSourceKafkaTopologyEdgeItems = (
+  resource: K8sResourceKind,
+  managedKafkaConnections,
+): EdgeModel[] => {
+  const edges = [];
+  _.forEach(managedKafkaConnections.data, (managedKafkaConnection) => {
+    const mkcBoostrapServer = managedKafkaConnection?.status?.boostrapServer?.host;
+    const mkcServiceAccountSecretName = managedKafkaConnection?.status?.serviceAccountSecretName;
+    const ksBoostrapServer = resource?.spec?.bootstrapServers;
+    const ksServiceAccountSecretNamePassword =
+      resource?.spec?.net?.sasl?.password?.secretKeyRef?.name;
+    const ksServiceAccountSecretNameUser = resource?.spec?.net?.sasl?.user?.secretKeyRef?.name;
+    if (
+      _.findIndex(ksBoostrapServer, mkcBoostrapServer) >= 0 &&
+      mkcServiceAccountSecretName === ksServiceAccountSecretNameUser &&
+      mkcServiceAccountSecretName === ksServiceAccountSecretNamePassword
+    ) {
+      const edgeId = `${resource?.metadata?.uid}_${managedKafkaConnection?.metadata?.uid}`;
+      edges.push({
+        id: edgeId,
+        type: TYPE_CONNECTS_TO,
+        source: resource?.metadata?.uid,
+        target: managedKafkaConnection?.metadata?.uid,
+      });
+    }
+  });
+  return edges;
+};
+
 /**
  * Form Edge data for service sources with traffic data
  */
@@ -885,6 +931,50 @@ export const createTopologyServiceNodeData = (
       isKnativeResource: true,
     },
   };
+};
+
+const KAFKA_PROPS = {
+  width: NODE_WIDTH,
+  height: NODE_HEIGHT,
+  group: false,
+  visible: true,
+  style: {
+    padding: NODE_PADDING,
+  },
+};
+
+export const createOverviewItem = (obj: K8sResourceKind): OverviewItem<K8sResourceKind> => {
+  if (!obj.apiVersion) {
+    obj.apiVersion = apiVersionForModel(ManagedKafkaConnectionModel);
+  }
+  if (!obj.kind) {
+    obj.kind = ManagedKafkaConnectionModel.kind;
+  }
+
+  return {
+    isOperatorBackedService: true,
+    obj,
+  };
+};
+
+export const getTopologyRhoasNodes = (kafkaConnections: K8sResourceKind[]): NodeModel[] => {
+  const nodes = [];
+  for (const obj of kafkaConnections) {
+    const data: TopologyDataObject = {
+      id: obj.metadata.uid,
+      name: obj.metadata.name,
+      type: ManagedKafkaConnectionModel.kind,
+      resource: obj,
+      // resources is poorly named, should be overviewItem, eventually going away.
+      resources: createOverviewItem(obj),
+      data: {
+        resource: obj,
+      },
+    };
+    nodes.push(getTopologyNodeItem(obj, ManagedKafkaConnectionModel.kind, data, KAFKA_PROPS));
+  }
+
+  return nodes;
 };
 
 export const createTopologyPubSubNodeData = (
@@ -951,7 +1041,6 @@ export const transformKnNodeData = (
   utils?: KnativeUtil[],
 ): Model => {
   const knDataModel: Model = { nodes: [], edges: [] };
-
   _.forEach(knResourcesData, (res) => {
     const item = createKnativeDeploymentItems(res, resources, utils);
     switch (type) {
@@ -1031,6 +1120,23 @@ export const transformKnNodeData = (
           const newGroup = getTopologyGroupItems(res);
           mergeGroup(newGroup, knDataModel.nodes);
         }
+        break;
+      }
+      case NodeType.Kafka: {
+        const data = getTopologyRhoasNodes(resources?.kafkaconnections?.data ?? []);
+        knDataModel.nodes.push(...data);
+        const newGroup = getTopologyGroupItems(res);
+        mergeGroup(newGroup, knDataModel.nodes);
+        break;
+      }
+      case NodeType.KnSourceKafka: {
+        const data = createTopologyServiceNodeData(res, item, type);
+        knDataModel.nodes.push(...getKnativeTopologyNodeItems(res, type, data, resources));
+        knDataModel.edges.push(
+          ...getKnSourceKafkaTopologyEdgeItems(res, resources.kafkaconnections),
+        );
+        const newGroup = getTopologyGroupItems(res);
+        mergeGroup(newGroup, knDataModel.nodes);
         break;
       }
       default:
@@ -1134,6 +1240,35 @@ export const createEventingPubSubSink = (subObj: K8sResourceKind, target: K8sRes
   };
 
   return k8sUpdate(modelFor(referenceFor(subscriptionObj)), updatePayload);
+};
+
+export const createEventSourceKafkaConnection = (
+  source: Node,
+  target: Node,
+): Promise<K8sResourceKind> => {
+  if (!source || !target || source === target) {
+    return Promise.reject();
+  }
+  const sourceObj = getResource(source);
+  const targetObj = getResource(target);
+  const mkcBoostrapServer = targetObj?.status?.boostrapServer?.host;
+  const mkcServiceAccountSecretName = targetObj?.status?.serviceAccountSecretName;
+  const knKafkaSourceObj = _.omit(sourceObj, 'status');
+  const updatedObjPayload = {
+    ...knKafkaSourceObj,
+    spec: {
+      bootstrapServers: [mkcBoostrapServer],
+      net: {
+        sasl: {
+          enable: true,
+          password: { secretKeyRef: { name: mkcServiceAccountSecretName, key: 'password' } },
+          user: { secretKeyRef: { name: mkcServiceAccountSecretName, key: 'user' } },
+        },
+        tasl: { enable: true },
+      },
+    },
+  };
+  return k8sUpdate(EventSourceKafkaModel, updatedObjPayload);
 };
 
 export const createSinkPubSubConnection = (

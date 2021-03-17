@@ -8,6 +8,7 @@ import {
   withSelection,
   withDndDrop,
   withCreateConnector,
+  DragObjectWithType,
 } from '@patternfly/react-topology';
 import {
   NodeComponentProps,
@@ -18,6 +19,8 @@ import {
   createConnectorCallback,
   CreateConnector,
   EditableDragOperationType,
+  nodeDropTargetSpec,
+  ConnectsTo,
 } from '@console/topology/src/components/graph-view';
 import { withEditReviewAccess, getResource } from '@console/topology/src/utils';
 import { ModifyApplication } from '@console/topology/src/actions';
@@ -36,6 +39,7 @@ import {
   TYPE_EVENT_PUB_SUB,
   TYPE_EVENT_PUB_SUB_LINK,
   TYPE_SINK_URI,
+  TYPE_EVENT_SOURCE_KAFKA,
 } from '../const';
 import KnativeService from './groups/KnativeService';
 import RevisionNode from './nodes/RevisionNode';
@@ -53,7 +57,11 @@ import {
   sinkUriDropTargetSpec,
   pubSubDropTargetSpec,
   CREATE_PUB_SUB_CONNECTOR_OPERATION,
+  eventSourceKafkaLinkDragSourceSpec,
+  eventSourceKafkaDropTargetSpec,
 } from './knativeComponentUtils';
+import KafkaNode from './nodes/KafkaNode';
+import { TYPE_CONNECTS_TO } from '@console/topology/src/const';
 
 export const knativeContextMenu = (element: Node) => {
   const item = getResource(element);
@@ -164,6 +172,52 @@ export const getKnativeComponentFactory = (): ComponentFactory => {
         return withContextMenu(knativeContextMenu)(
           withTargetDrag(eventingPubSubLinkDragSourceSpec())(EventingPubSubLink),
         );
+      case 'KafkaConnection': {
+        return withCreateConnector(
+          createConnectorCallback(),
+          CreateConnector,
+        )(
+          withDndDrop<
+            any,
+            any,
+            { droppable?: boolean; hover?: boolean; canDrop?: boolean },
+            NodeComponentProps
+          >(nodeDropTargetSpec)(
+            withEditReviewAccess('patch')(
+              withDragNode(nodeDragSourceSpec(type))(
+                withSelection({ controlled: true })(KafkaNode),
+              ),
+            ),
+          ),
+        );
+      }
+      case TYPE_EVENT_SOURCE_KAFKA:
+        return withCreateConnector(
+          createConnectorCallback(),
+          CreateConnector,
+        )(
+          withEditReviewAccess('patch')(
+            withDragNode(nodeDragSourceSpec(type))(
+              withSelection({ controlled: true })(
+                withContextMenu(knativeContextMenu)(
+                  withDndDrop<
+                    any,
+                    any,
+                    {
+                      droppable?: boolean;
+                      hover?: boolean;
+                      canDrop?: boolean;
+                      dropTarget?: boolean;
+                    },
+                    NodeComponentProps
+                  >(eventSourceKafkaDropTargetSpec)(EventSource),
+                ),
+              ),
+            ),
+          ),
+        );
+      case TYPE_CONNECTS_TO:
+        return withTargetDrag<DragObjectWithType>(eventSourceKafkaLinkDragSourceSpec())(ConnectsTo);
       default:
         return undefined;
     }

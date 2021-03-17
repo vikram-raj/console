@@ -23,12 +23,17 @@ import {
   TYPE_EVENT_PUB_SUB,
   TYPE_SINK_URI,
 } from '../const';
-import { createSinkConnection, createSinkPubSubConnection } from '../knative-topology-utils';
+import {
+  createEventSourceKafkaConnection,
+  createSinkConnection,
+  createSinkPubSubConnection,
+} from '../knative-topology-utils';
 import { EventingBrokerModel } from '../../models';
 
 export const MOVE_EV_SRC_CONNECTOR_OPERATION = 'moveeventsourceconnector';
 export const MOVE_PUB_SUB_CONNECTOR_OPERATION = 'movepubsubconnector';
 export const CREATE_PUB_SUB_CONNECTOR_OPERATION = 'createpubsubconnector';
+export const MOVE_EV_SRC_KAFKA_CONNECTOR_OPERATION = 'moveeventsourcekafkaconnector';
 
 export const nodesEdgeIsDragging = (monitor, props) =>
   monitor.isDragging() &&
@@ -170,6 +175,39 @@ export const eventSourceLinkDragSourceSpec = (): DragSourceSpec<
   }),
 });
 
+export const eventSourceKafkaLinkDragSourceSpec = (): DragSourceSpec<
+  DragObjectWithType,
+  DragSpecOperationType<EditableDragOperationType>,
+  Node,
+  { dragging: boolean },
+  EdgeComponentProps
+> => ({
+  item: { type: EDGE_DRAG_TYPE },
+  operation: { type: MOVE_EV_SRC_KAFKA_CONNECTOR_OPERATION, edit: true },
+  begin: (monitor, props) => {
+    props.element.raise();
+    return props.element;
+  },
+  drag: (event, monitor, props) => {
+    props.element.setEndPoint(event.x, event.y);
+  },
+  end: (dropResult, monitor, props) => {
+    props.element.setEndPoint();
+    if (monitor.didDrop() && dropResult) {
+      createEventSourceKafkaConnection(props.element.getSource(), dropResult).catch((error) => {
+        errorModal({
+          title: 'Error moving event source kafka connector',
+          error: error.message,
+          showIcon: true,
+        });
+      });
+    }
+  },
+  collect: (monitor) => ({
+    dragging: monitor.isDragging(),
+  }),
+});
+
 export const eventingPubSubLinkDragSourceSpec = (): DragSourceSpec<
   DragObjectWithType,
   DragSpecOperationType<EditableDragOperationType>,
@@ -220,4 +258,16 @@ export const eventSourceTargetSpec: DropTargetSpec<
   collect: (monitor, props) => ({
     edgeDragging: nodesEdgeIsDragging(monitor, props),
   }),
+};
+
+export const eventSourceKafkaDropTargetSpec: DropTargetSpec<
+  Edge,
+  any,
+  { canDrop: boolean; dropTarget: boolean; edgeDraging: boolean },
+  NodeComponentProps
+> = {
+  accept: [EDGE_DRAG_TYPE, CREATE_CONNECTOR_DROP_TYPE],
+  // canDrop: (item, monitor, props) => {
+  //   return item.getType() === 'fdf';
+  // },
 };

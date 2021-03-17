@@ -9,12 +9,15 @@ export enum NodeType {
   Revision = 'knative-revision',
   PubSub = 'event-pubsub',
   SinkUri = 'sink-uri',
+  KnSourceKafka = 'knative-source-kafka',
+  Kafka = 'knative-kafka',
 }
 
 export enum EdgeType {
   Traffic = 'revision-traffic',
   EventSource = 'event-source-link',
   EventPubSubLink = 'event-pubsub-link',
+  EventSourceKafka = 'event-source-kafka-link',
 }
 
 export type RevK8sResourceKind = K8sResourceKind & {

@@ -11,6 +11,7 @@ import {
   useCombineRefs,
   WithDragNodeProps,
   createSvgIdUrl,
+  WithCreateConnectorProps,
 } from '@patternfly/react-topology';
 import SvgBoxedText from '@console/topology/src/components/svg/SvgBoxedText';
 import {
@@ -23,6 +24,7 @@ import {
   useDisplayFilters,
   getFilterById,
   SHOW_LABELS_FILTER_ID,
+  useAllowEdgeCreation,
 } from '@console/topology/src/filters';
 
 import { getEventSourceIcon } from '../../../utils/get-knative-icon';
@@ -36,7 +38,8 @@ export type EventSourceProps = {
 } & WithSelectionProps &
   WithDragNodeProps &
   WithDndDropProps &
-  WithContextMenuProps;
+  WithContextMenuProps &
+  WithCreateConnectorProps;
 
 const EventSource: React.FC<EventSourceProps> = ({
   element,
@@ -48,6 +51,8 @@ const EventSource: React.FC<EventSourceProps> = ({
   dndDropRef,
   dragging,
   edgeDragging,
+  onShowCreateConnector,
+  onHideCreateConnector,
 }) => {
   const svgAnchorRef = useSvgAnchor();
   const [hover, hoverRef] = useHover();
@@ -59,6 +64,17 @@ const EventSource: React.FC<EventSourceProps> = ({
   const { width, height } = element.getBounds();
   const size = Math.min(width, height);
   const { data, resources } = element.getData();
+  const allowEdgeCreation = useAllowEdgeCreation();
+
+  React.useLayoutEffect(() => {
+    if (allowEdgeCreation) {
+      if (hover) {
+        onShowCreateConnector && onShowCreateConnector();
+      } else {
+        onHideCreateConnector && onHideCreateConnector();
+      }
+    }
+  }, [hover, onShowCreateConnector, onHideCreateConnector, allowEdgeCreation]);
 
   return (
     <g
