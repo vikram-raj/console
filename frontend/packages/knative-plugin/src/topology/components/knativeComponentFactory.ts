@@ -38,7 +38,6 @@ import {
   TYPE_SINK_URI,
   TYPE_EVENT_SOURCE_KAFKA,
   TYPE_KAFKA_CONNECTION_LINK,
-  TYPE_KAFKA_CONNECTION,
 } from '../const';
 import KnativeService from './groups/KnativeService';
 import RevisionNode from './nodes/RevisionNode';
@@ -57,10 +56,8 @@ import {
   pubSubDropTargetSpec,
   CREATE_PUB_SUB_CONNECTOR_OPERATION,
   eventSourceKafkaLinkDragSourceSpec,
-  KafkaConnectionDropTargetSpec,
   CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION,
 } from './knativeComponentUtils';
-import KafkaNode from './nodes/KafkaNode';
 import KafkaConnectionLink from './edges/KafkaConnectionLink';
 
 export const knativeContextMenu = (element: Node) => {
@@ -173,25 +170,6 @@ export const getKnativeComponentFactory = (): ComponentFactory => {
         return TrafficLink;
       case TYPE_EVENT_SOURCE_LINK:
         return withTargetDrag(eventSourceLinkDragSourceSpec())(EventSourceLink);
-      case TYPE_KAFKA_CONNECTION: {
-        return withCreateConnector(
-          createConnectorCallback(),
-          CreateConnector,
-        )(
-          withDndDrop<
-            any,
-            any,
-            { droppable?: boolean; hover?: boolean; canDrop?: boolean },
-            NodeComponentProps
-          >(KafkaConnectionDropTargetSpec)(
-            withEditReviewAccess('patch')(
-              withDragNode(nodeDragSourceSpec(type))(
-                withSelection({ controlled: true })(KafkaNode),
-              ),
-            ),
-          ),
-        );
-      }
       case TYPE_EVENT_SOURCE_KAFKA:
         return withCreateConnector(createConnectorCallback(), CreateConnector, '', {
           dragOperation: dragOperationKafka,

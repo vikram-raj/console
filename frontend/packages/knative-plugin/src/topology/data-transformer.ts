@@ -67,7 +67,6 @@ export const getKnativeTopologyDataModel = (
   );
   const knBrokerResources: K8sResourceKind[] = resources?.brokers?.data ?? [];
   const camelKameletBindingResources: K8sResourceKind[] = resources?.kameletbindings?.data ?? [];
-  const kafkaConnectionResources: K8sResourceKind[] = resources?.kafkaconnections?.data ?? [];
   const addTopologyData = (KnResources: K8sResourceKind[], type?: string) => {
     addKnativeTopologyData(knativeTopologyGraphModel, KnResources, type, resources, utils);
   };
@@ -78,7 +77,6 @@ export const getKnativeTopologyDataModel = (
   addTopologyData(knChannelResources, NodeType.PubSub);
   addTopologyData(knBrokerResources, NodeType.PubSub);
   addTopologyData(camelKameletBindingResources, NodeType.EventSource);
-  addTopologyData(kafkaConnectionResources, NodeType.Kafka);
 
   const revisionData = getRevisionsData(knRevResources, resources, utils);
 

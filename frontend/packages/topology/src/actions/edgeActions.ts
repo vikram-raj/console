@@ -9,9 +9,9 @@ import {
   TYPE_KNATIVE_SERVICE,
   TYPE_EVENT_PUB_SUB,
   TYPE_REVISION_TRAFFIC,
-  TYPE_KAFKA_CONNECTION,
   TYPE_KAFKA_CONNECTION_LINK,
 } from '@console/knative-plugin/src/topology/const';
+import { TYPE_MANAGED_KAFKA_CONNECTION } from '@console/rhoas-plugin/src/topology/components/const';
 import { getResource } from '../utils/topology-utils';
 import { TYPE_CONNECTS_TO, TYPE_SERVICE_BINDING, TYPE_TRAFFIC_CONNECTOR } from '../const';
 import { moveConnectionModal } from '../components/modals/MoveConnectionModal';
@@ -75,7 +75,7 @@ export const edgeActions = (edge: Edge, nodes: Node[]): KebabOption[] => {
         case TYPE_TRAFFIC_CONNECTOR:
           return false;
         case TYPE_KAFKA_CONNECTION_LINK:
-          return n.getType() === TYPE_KAFKA_CONNECTION;
+          return n.getType() === TYPE_MANAGED_KAFKA_CONNECTION;
         default:
           return true;
       }

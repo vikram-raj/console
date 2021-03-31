@@ -47,7 +47,6 @@ import {
   EventingTriggerModel,
   CamelKameletBindingModel,
   EventSourceSinkBindingModel,
-  ManagedKafkaConnectionModel,
   EventSourceKafkaModel,
 } from '../models';
 import {
@@ -95,16 +94,6 @@ export const getKnNodeModelProps = (type: string) => {
         },
       };
     case NodeType.SinkUri:
-      return {
-        width: NODE_WIDTH * 0.75,
-        height: NODE_HEIGHT * 0.75,
-        visible: true,
-        shape: NodeShape.circle,
-        style: {
-          padding: NODE_PADDING,
-        },
-      };
-    case NodeType.Kafka:
       return {
         width: NODE_WIDTH * 0.75,
         height: NODE_HEIGHT * 0.75,
@@ -927,50 +916,6 @@ export const createTopologyServiceNodeData = (
   };
 };
 
-const KAFKA_PROPS = {
-  width: NODE_WIDTH,
-  height: NODE_HEIGHT,
-  group: false,
-  visible: true,
-  style: {
-    padding: NODE_PADDING,
-  },
-};
-
-export const createOverviewItem = (obj: K8sResourceKind): OverviewItem<K8sResourceKind> => {
-  if (!obj.apiVersion) {
-    obj.apiVersion = apiVersionForModel(ManagedKafkaConnectionModel);
-  }
-  if (!obj.kind) {
-    obj.kind = ManagedKafkaConnectionModel.kind;
-  }
-
-  return {
-    isOperatorBackedService: true,
-    obj,
-  };
-};
-
-export const getTopologyRhoasNodes = (kafkaConnections: K8sResourceKind[], type): NodeModel[] => {
-  const nodes = [];
-  for (const obj of kafkaConnections) {
-    const data: TopologyDataObject = {
-      id: obj.metadata.uid,
-      name: obj.metadata.name,
-      type,
-      resource: obj,
-      // resources is poorly named, should be overviewItem, eventually going away.
-      resources: createOverviewItem(obj),
-      data: {
-        resource: obj,
-      },
-    };
-    nodes.push(getTopologyNodeItem(obj, type, data, KAFKA_PROPS));
-  }
-
-  return nodes;
-};
-
 export const createTopologyPubSubNodeData = (
   resource: K8sResourceKind,
   res: OverviewItem,
@@ -1124,18 +1069,11 @@ export const transformKnNodeData = (
         }
         break;
       }
-      case NodeType.Kafka: {
-        const data = getTopologyRhoasNodes(resources?.kafkaconnections?.data ?? [], type);
-        knDataModel.nodes.push(...data);
-        const newGroup = getTopologyGroupItems(res);
-        mergeGroup(newGroup, knDataModel.nodes);
-        break;
-      }
       case NodeType.KnSourceKafka: {
         const data = createTopologyServiceNodeData(res, item, type);
         knDataModel.nodes.push(...getKnativeTopologyNodeItems(res, type, data, resources));
         knDataModel.edges.push(
-          ...getKnSourceKafkaTopologyEdgeItems(res, resources.kafkaconnections),
+          ...getKnSourceKafkaTopologyEdgeItems(res, resources.kafkaConnections),
           ...getEventTopologyEdgeItems(res, resources.ksservices),
         );
         const { edges, nodes } = sinkURIDataModel(res, resources, data, knDataModel);

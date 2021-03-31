@@ -22,7 +22,6 @@ import {
   TYPE_KNATIVE_SERVICE,
   TYPE_EVENT_PUB_SUB,
   TYPE_SINK_URI,
-  TYPE_KAFKA_CONNECTION_LINK,
 } from '../const';
 import {
   createEventSourceKafkaConnection,
@@ -262,25 +261,4 @@ export const eventSourceTargetSpec: DropTargetSpec<
   collect: (monitor, props) => ({
     edgeDragging: nodesEdgeIsDragging(monitor, props),
   }),
-};
-
-export const KafkaConnectionDropTargetSpec: DropTargetSpec<
-  Edge,
-  any,
-  { canDrop: boolean; dropTarget: boolean; edgeDragging: boolean },
-  NodeComponentProps
-> = {
-  accept: [EDGE_DRAG_TYPE, CREATE_CONNECTOR_DROP_TYPE],
-  canDrop: (item, monitor, props) =>
-    (item.getType() === TYPE_KAFKA_CONNECTION_LINK && item.getSource() !== props.element) ||
-    monitor.getOperation()?.type === CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION,
-  collect: (monitor, props) => ({
-    canDrop:
-      monitor.getOperation()?.type === MOVE_EV_SRC_KAFKA_CONNECTOR_OPERATION ||
-      monitor.getOperation()?.type === CREATE_EV_SRC_KAFKA_CONNECTOR_OPERATION,
-    dropTarget: monitor.isOver({ shallow: true }),
-    edgeDragging: nodesEdgeIsDragging(monitor, props),
-    tooltipLabel: 'Create a Kafka connector',
-  }),
-  dropHint: 'createKafkaConnection',
 };
