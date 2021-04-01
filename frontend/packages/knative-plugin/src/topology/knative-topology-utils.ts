@@ -1070,7 +1070,12 @@ export const transformKnNodeData = (
         break;
       }
       case NodeType.KnSourceKafka: {
-        const data = createTopologyServiceNodeData(res, item, type);
+        const data = createTopologyNodeData(
+          res,
+          item,
+          type,
+          getImageForIconClass(`icon-openshift`),
+        );
         knDataModel.nodes.push(...getKnativeTopologyNodeItems(res, type, data, resources));
         knDataModel.edges.push(
           ...getKnSourceKafkaTopologyEdgeItems(res, resources.kafkaConnections),
