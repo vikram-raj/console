@@ -101,7 +101,8 @@ const plugin: Plugin<ConsumedExtensions> = [
         },
       },
       healthHandler: securityHealthHandler,
-      popupTitle: 'Image Vulnerabilities breakdown',
+      // t('container-security~Image Vulnerabilities breakdown')
+      popupTitle: '%container-security~Image Vulnerabilities breakdown%',
       popupComponent: () =>
         import('./components/summary' /* webpackChunkName: "container-security" */).then(
           (m) => m.SecurityBreakdownPopup,
@@ -116,7 +117,8 @@ const plugin: Plugin<ConsumedExtensions> = [
     properties: {
       model: PodModel,
       page: {
-        name: 'Vulnerabilities',
+        // t('container-security~Vulnerabilities')
+        name: '%container-security~Vulnerabilities%',
         href: 'vulnerabilities',
       },
       loader: () =>
@@ -133,7 +135,8 @@ const plugin: Plugin<ConsumedExtensions> = [
     properties: {
       model: ProjectModel,
       page: {
-        name: 'Vulnerabilities',
+        // t('container-security~Vulnerabilities')
+        name: '%container-security~Vulnerabilities%',
         href: 'vulnerabilities',
       },
       loader: () =>
@@ -150,7 +153,8 @@ const plugin: Plugin<ConsumedExtensions> = [
     properties: {
       model: NamespaceModel,
       page: {
-        name: 'Vulnerabilities',
+        // t('container-security~Vulnerabilities')
+        name: '%container-security~Vulnerabilities%',
         href: 'vulnerabilities',
       },
       loader: () =>
