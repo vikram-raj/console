@@ -20,10 +20,10 @@
       }
     }
     &--highlight {
-      background: var(--pf-global--active-color--200) !important;
+      background: var(--co-global--palette--blue-100) !important;
     }
     &:hover {
-      background: var(--pf-global--active-color--200);
+      background: var(--co-global--palette--blue-100);
     }
   }
   &__item-row {
