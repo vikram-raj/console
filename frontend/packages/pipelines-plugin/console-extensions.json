@@ -102,7 +102,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "TriggerBinding"
       },
       "color": "#38812f",
@@ -117,7 +117,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "ClusterTriggerBinding"
       },
       "color": "#38812f",
@@ -132,7 +132,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "TriggerTemplate"
       },
       "color": "#38812f",
@@ -147,7 +147,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "EventListener"
       },
       "color": "#38812f",
@@ -301,7 +301,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "EventListener"
       },
       "component": { "$codeRef": "pipelinesComponent.EventListenerPage" }
@@ -312,7 +312,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "TriggerTemplate"
       },
       "component": { "$codeRef": "pipelinesComponent.TriggerTemplatePage" }
@@ -323,7 +323,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "TriggerBinding"
       },
       "component": { "$codeRef": "pipelinesComponent.TriggerBindingPage" }
@@ -334,7 +334,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "ClusterTriggerBinding"
       },
       "component": { "$codeRef": "pipelinesComponent.ClusterTriggerBindingPage" }
@@ -345,7 +345,7 @@
     "properties": {
       "model": {
         "group": "triggers.tekton.dev",
-        "version": "v1alpha1",
+        "version": "v1beta1",
         "kind": "ClusterTriggerBinding"
       },
       "component": { "$codeRef": "pipelinesComponent.ClusterTriggerBindingPage" }
