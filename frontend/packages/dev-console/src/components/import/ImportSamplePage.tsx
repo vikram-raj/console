@@ -3,6 +3,8 @@ import { Formik } from 'formik';
 import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { RouteComponentProps } from 'react-router';
+import { ImportStrategy } from '@console/git-service/src';
+import { isServerlessBuilder } from '@console/internal/components/image-stream';
 import {
   FirehoseResource,
   LoadingBox,
@@ -21,11 +23,12 @@ import {
   getSampleRepo,
   getSampleRef,
   getSampleContextDir,
+  getSFSampleRepo,
 } from '../../utils/imagestream-utils';
 import NamespacedPage, { NamespacedPageVariants } from '../NamespacedPage';
 import { getBaseInitialValues } from './form-initial-values';
 import { createOrUpdateResources } from './import-submit-utils';
-import { BaseFormData, GitImportFormData } from './import-types';
+import { BaseFormData, GitImportFormData, Resources } from './import-types';
 import { detectGitType, validationSchema } from './import-validation-utils';
 import ImportSampleForm from './ImportSampleForm';
 
@@ -34,6 +37,8 @@ type ImportSamplePageProps = RouteComponentProps<{ ns?: string; is?: string; isN
 const ImportSamplePage: React.FC<ImportSamplePageProps> = ({ match }) => {
   const { t } = useTranslation();
   const { ns: namespace, is: imageStreamName, isNs: imageStreamNamespace } = match.params;
+  const searchParams = new URLSearchParams(window.location.search);
+  const isSFType = searchParams.get('type');
 
   const imageStreamResource: FirehoseResource = React.useMemo(
     () => ({
@@ -46,9 +51,11 @@ const ImportSamplePage: React.FC<ImportSamplePageProps> = ({ match }) => {
     [imageStreamName, imageStreamNamespace],
   );
 
-  const [imageStream, imageStreamloaded] = useK8sWatchResource(imageStreamResource);
+  const [imageStream, imageStreamloaded] = useK8sWatchResource<any>(imageStreamResource);
 
   if (!imageStreamloaded) return <LoadingBox />;
+
+  const isSFBuilder = isServerlessBuilder(imageStream) && isSFType === 'ServerlessFunction';
 
   const { [imageStreamName]: builderImage }: NormalizedBuilderImages = normalizeBuilderImages(
     imageStream,
@@ -56,7 +63,7 @@ const ImportSamplePage: React.FC<ImportSamplePageProps> = ({ match }) => {
 
   const { name: imageName, recentTag: tag } = builderImage;
 
-  const gitUrl = getSampleRepo(tag);
+  const gitUrl = isSFBuilder ? getSFSampleRepo(tag) : getSampleRepo(tag);
   const gitRef = getSampleRef(tag);
   const gitDir = getSampleContextDir(tag);
   const gitType = detectGitType(gitUrl);
@@ -65,6 +72,8 @@ const ImportSamplePage: React.FC<ImportSamplePageProps> = ({ match }) => {
   const initialValues: GitImportFormData = {
     ...initialBaseValues,
     name: `${imageName}-sample`,
+    resources: isSFBuilder ? Resources.KnativeService : Resources.Kubernetes,
+    formType: isSFBuilder ? 'serverlessFunction' : '',
     application: {
       initial: SAMPLE_APPLICATION_GROUP,
       name: SAMPLE_APPLICATION_GROUP,
@@ -108,6 +117,12 @@ const ImportSamplePage: React.FC<ImportSamplePageProps> = ({ match }) => {
     },
     import: {
       showEditImportStrategy: true,
+      selectedStrategy: {
+        name: '',
+        type: isSFBuilder ? ImportStrategy.S2I : ImportStrategy.SERVERLESS_FUNCTION,
+        priority: 0,
+        detectedFiles: [],
+      },
     },
   };
 

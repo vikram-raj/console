@@ -39,6 +39,16 @@ const isBuilderTag = (specTag: any) => {
   return _.includes(annotationTags, 'builder') && !_.includes(annotationTags, 'hidden');
 };
 
+const isServerlessBuilderTag = (specTag: any) => {
+  // A spec tag has annotations tags, which is a comma-delimited string (e.g., 'builder,httpd').
+  const annotationTags = getAnnotationTags(specTag);
+  return (
+    _.includes(annotationTags, 'builder') &&
+    _.includes(annotationTags, 'serverlessfunction') &&
+    !_.includes(annotationTags, 'hidden')
+  );
+};
+
 const getStatusTags = (imageStream: K8sResourceKind): any => {
   const statusTags = _.get(imageStream, 'status.tags');
   return _.keyBy(statusTags, 'tag');
@@ -47,6 +57,14 @@ const getStatusTags = (imageStream: K8sResourceKind): any => {
 export const getBuilderTags = (imageStream: K8sResourceKind): any[] => {
   const statusTags = getStatusTags(imageStream);
   return _.filter(imageStream.spec.tags, (tag) => isBuilderTag(tag) && statusTags[tag.name]);
+};
+
+export const getServerlessBuilderTags = (imageStream: K8sResourceKind): any[] => {
+  const statusTags = getStatusTags(imageStream);
+  return _.filter(
+    imageStream.spec.tags,
+    (tag) => isServerlessBuilderTag(tag) && statusTags[tag.name],
+  );
 };
 
 // Sort tags in reverse order by semver, falling back to a string comparison if not a valid version.
@@ -76,6 +94,9 @@ export const getMostRecentBuilderTag = (imageStream: K8sResourceKind) => {
 // - It has a spec tag annotated with `builder` and not `hidden`
 // - It has a corresponding status tag
 export const isBuilder = (imageStream: K8sResourceKind) => !_.isEmpty(getBuilderTags(imageStream));
+
+export const isServerlessBuilder = (imageStream: K8sResourceKind) =>
+  !_.isEmpty(getServerlessBuilderTags(imageStream));
 
 const { common } = Kebab.factory;
 const menuActions = [...Kebab.getExtensionsActionsForKind(ImageStreamModel), ...common];

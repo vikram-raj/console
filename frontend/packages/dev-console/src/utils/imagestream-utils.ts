@@ -41,6 +41,7 @@ export interface NormalizedBuilderImages {
 export const imageStreamLabels = ['app.kubernetes.io/name', 'app.openshift.io/runtime'];
 
 export const getSampleRepo = (tag) => tag?.annotations?.sampleRepo ?? '';
+export const getSFSampleRepo = (tag) => tag?.annotations?.serverlessFuncSampleRepo ?? '';
 export const getSampleRef = (tag) => tag?.annotations?.sampleRef ?? '';
 export const getSampleContextDir = (tag) => tag?.annotations?.sampleContextDir ?? '';
 

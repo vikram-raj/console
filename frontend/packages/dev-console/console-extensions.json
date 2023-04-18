@@ -434,6 +434,18 @@
     }
   },
   {
+    "type": "console.catalog/item-type",
+    "properties": {
+      "type": "ServerlessFunction",
+      "title": "%devconsole~Serverless Function%",
+      "catalogDescription": "%devconsole~Serverless function builder image.%",
+      "typeDescription": "%devconsole~**Builder Images** Serverless function.%"
+    },
+    "flags": {
+      "required": ["OPENSHIFT"]
+    }
+  },
+  {
     "type": "console.catalog/item-provider",
     "properties": {
       "catalogId": "dev-catalog",
@@ -537,6 +549,18 @@
       "type": "BuilderImage",
       "title": "%devconsole~Builder Images%",
       "provider": { "$codeRef": "catalog.builderImageSamplesProvider" }
+    },
+    "flags": {
+      "required": ["OPENSHIFT"]
+    }
+  },
+  {
+    "type": "console.catalog/item-provider",
+    "properties": {
+      "catalogId": "samples-catalog",
+      "type": "ServerlessFunction",
+      "title": "%devconsole~Serverless Function%",
+      "provider": { "$codeRef": "catalog.serverlessBuilderImageSamplesProvider" }
     },
     "flags": {
       "required": ["OPENSHIFT"]
