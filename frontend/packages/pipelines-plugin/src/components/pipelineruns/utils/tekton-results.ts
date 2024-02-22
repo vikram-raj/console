@@ -226,7 +226,10 @@ export const createTektonResultsUrl = async (
   const serverPort = tektonResult?.spec?.server_port ?? '8080';
   const tlsHostname = tektonResult?.spec?.tls_hostname_override;
   let tektonResultsAPI;
-  if (tlsHostname) {
+  if (window.location.href.startsWith('http://localhost')) {
+    const route = await k8sGet(RouteModel, 'tekton-results-api-service', targetNamespace);
+    tektonResultsAPI = route?.spec.host;
+  } else if (tlsHostname) {
     tektonResultsAPI = `${tlsHostname}:${serverPort}`;
   } else if (targetNamespace && serverPort) {
     tektonResultsAPI = `tekton-results-api-service.${targetNamespace}.svc.cluster.local:${serverPort}`;
