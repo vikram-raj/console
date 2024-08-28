@@ -361,6 +361,19 @@
     "type": "console.page/route",
     "properties": {
       "exact": true,
+      "path": ["/catalog/ns/:ns/subscribe"],
+      "component": {
+        "$codeRef": "addComponent.SubscribePage"
+      }
+    },
+    "flags": {
+      "required": ["KNATIVE_EVENTING"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
       "path": ["/channel"],
       "component": {
         "$codeRef": "knativeComponent.NamespaceRedirect"
@@ -440,11 +453,10 @@
     "properties": {
       "id": "functions",
       "perspective": "dev",
-      "section": "resources",
+      "section": "serverless",
       "name": "%knative-plugin~Functions%",
       "href": "/functions",
       "namespaced": true,
-      "insertBefore": "builds",
       "dataAttributes": {
         "data-quickstart-id": "qs-nav-functions",
         "data-test-id": "functions-details-header"
@@ -468,6 +480,36 @@
     },
     "flags": {
       "required": ["KNATIVE_SERVING", "KNATIVE_SERVING_SERVICE"]
+    }
+  },
+  {
+    "type": "console.catalog/item-type",
+    "properties": {
+      "type": "Events",
+      "title": "%knative-plugin~Events%",
+      "catalogDescription": "%knative-plugin~​​Events available that can be consumed with Serverless Functions or regular Deployments.%",
+      "typeDescription": "%knative-plugin~​​**Events** available that can be consumed with Serverless Functions or regular Deployments.%",
+      "filters": [
+        {
+          "label": "%knative-plugin~Provider%",
+          "attribute": "provider"
+        }
+      ]
+    },
+    "flags": {
+      "required": ["KNATIVE_EVENTING"]
+    }
+  },
+  {
+    "type": "console.catalog/item-provider",
+    "properties": {
+      "catalogId": "dev-catalog",
+      "type": "Events",
+      "title": "%knative-plugin~Events%",
+      "provider": { "$codeRef": "catalog.eventTypeProvider" }
+    },
+    "flags": {
+      "required": ["KNATIVE_EVENTING"]
     }
   },
   {
@@ -658,6 +700,20 @@
     }
   },
   {
+    "type": "dev-console.add/action",
+    "flags": {
+      "required": ["KNATIVE_EVENTING", "DEVELOPER_CATALOG", "FLAG_KNATIVE_EVENTING_ENABLED"]
+    },
+    "properties": {
+      "id": "knative-event-type",
+      "groupId": "eventing",
+      "href": "/catalog/ns/:namespace?catalogType=Events",
+      "label": "%knative-plugin~Events%",
+      "description": "%knative-plugin~​​Events available that can be consumed with Serverless Functions or regular Deployments%",
+      "icon": { "$codeRef": "icons.eventSourceIconSVG" }
+    }
+  },
+  {
     "type": "console.catalog/item-type",
     "properties": {
       "type": "EventSource",
@@ -761,7 +817,7 @@
     "type": "console.navigation/href",
     "properties": {
       "id": "serverlessserving",
-      "perspective": "admin",
+      "perspective": "dev",
       "section": "serverless",
       "name": "%knative-plugin~Serving%",
       "href": "/serving",
@@ -775,7 +831,7 @@
     "type": "console.navigation/href",
     "properties": {
       "id": "serverlesseventing",
-      "perspective": "admin",
+      "perspective": "dev",
       "section": "serverless",
       "name": "%knative-plugin~Eventing%",
       "href": "/eventing",
@@ -1897,12 +1953,11 @@
   {
     "type": "console.navigation/section",
     "properties": {
-      "perspective": "admin",
+      "perspective": "dev",
       "id": "serverless",
       "name": "%knative-plugin~Serverless%",
       "dataAttributes": { "data-quickstart-id": "qs-nav-serverless" },
-      "insertBefore": "networking",
-      "insertAfter": "virtualization"
+      "insertBefore": "resources"
     },
     "flags": {
       "required": ["KNATIVE_SERVING", "KNATIVE_EVENTING"]
