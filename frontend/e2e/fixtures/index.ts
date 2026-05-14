@@ -44,7 +44,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
   k8sClient: [
     async ({ testConfig }, use) => {
-      const client = new KubernetesClient(
+      const client = await KubernetesClient.create(
         {
           clusterUrl: process.env.CLUSTER_URL || '',
           username: process.env.OPENSHIFT_USERNAME || 'kubeadmin',

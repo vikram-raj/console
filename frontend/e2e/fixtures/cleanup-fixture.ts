@@ -35,7 +35,7 @@ export function createCleanupFixture(testName: string): CleanupFixture {
     process.env.DEBUG === '1' ||
     process.env.DEBUG === 'true';
 
-  function getClient(): KubernetesClient | null {
+  async function getClient(): Promise<KubernetesClient | null> {
     try {
       const configPath = path.resolve(__dirname, '..', '.test-config.json');
       let kubeConfigPath: string | undefined;
@@ -45,7 +45,7 @@ export function createCleanupFixture(testName: string): CleanupFixture {
         kubeConfigPath = config.kubeConfigPath;
         authToken = config.authToken;
       }
-      return new KubernetesClient(
+      return await KubernetesClient.create(
         {
           clusterUrl: process.env.CLUSTER_URL || '',
           username: process.env.OPENSHIFT_USERNAME || 'kubeadmin',
@@ -108,7 +108,7 @@ export function createCleanupFixture(testName: string): CleanupFixture {
         return;
       }
 
-      const client = getClient();
+      const client = await getClient();
       if (!client) {
         console.warn(`[Cleanup] No K8s client available for "${testName}"`);
         return;

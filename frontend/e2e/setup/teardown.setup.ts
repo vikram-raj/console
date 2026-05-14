@@ -34,7 +34,7 @@ teardown('delete test namespace', async () => {
     return;
   }
 
-  const client = new KubernetesClient(
+  const client = await KubernetesClient.create(
     {
       clusterUrl: process.env.CLUSTER_URL || '',
       username: process.env.OPENSHIFT_USERNAME || 'kubeadmin',

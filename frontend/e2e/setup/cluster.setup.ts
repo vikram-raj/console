@@ -25,7 +25,7 @@ setup('verify cluster authentication', async () => {
   const clusterUrl = process.env.CLUSTER_URL || '';
 
   try {
-    k8sClient = new KubernetesClient({ clusterUrl, username, password });
+    k8sClient = await KubernetesClient.create({ clusterUrl, username, password });
     await k8sClient.verifyAuthentication();
     clusterAvailable = true;
   } catch (err) {

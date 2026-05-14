@@ -4,7 +4,16 @@ import * as net from 'net';
 import * as path from 'path';
 import { URL } from 'url';
 
-import * as k8s from '@kubernetes/client-node';
+import type {
+  AppsV1Api,
+  CoreV1Api,
+  CustomObjectsApi,
+  KubeConfig,
+  V1Pod,
+} from '@kubernetes/client-node';
+
+/** Runtime module; loaded via dynamic import() because the package is ESM-only. */
+type K8sClientNode = typeof import('@kubernetes/client-node');
 
 export interface ClusterAuthConfig {
   clusterUrl: string;
@@ -41,10 +50,32 @@ async function pollUntil(
 }
 
 export default class KubernetesClient {
-  private readonly k8sApi: k8s.CoreV1Api;
-  private readonly appsApi: k8s.AppsV1Api;
-  private readonly coApi: k8s.CustomObjectsApi;
-  private readonly kubeConfig: k8s.KubeConfig;
+  private static k8sLoadPromise: Promise<K8sClientNode> | null = null;
+
+  private static loadK8sModule(): Promise<K8sClientNode> {
+    if (!KubernetesClient.k8sLoadPromise) {
+      KubernetesClient.k8sLoadPromise = import('@kubernetes/client-node');
+    }
+    return KubernetesClient.k8sLoadPromise;
+  }
+
+  /**
+   * Factory for KubernetesClient. Loads `@kubernetes/client-node` via dynamic `import()`
+   * so tests can run under CommonJS (e.g. Playwright) without `require()` of an ESM-only package.
+   */
+  static async create(
+    config: ClusterAuthConfig,
+    kubeConfigPath?: string,
+  ): Promise<KubernetesClient> {
+    const k8s = await KubernetesClient.loadK8sModule();
+    return new KubernetesClient(k8s, config, kubeConfigPath);
+  }
+
+  private readonly k8s: K8sClientNode;
+  private readonly k8sApi: CoreV1Api;
+  private readonly appsApi: AppsV1Api;
+  private readonly coApi: CustomObjectsApi;
+  private readonly kubeConfig: KubeConfig;
 
   private static getProxyUrl(): string | undefined {
     return (
@@ -214,7 +245,8 @@ export default class KubernetesClient {
     return outputPath;
   }
 
-  constructor(config: ClusterAuthConfig, kubeConfigPath?: string) {
+  private constructor(k8s: K8sClientNode, config: ClusterAuthConfig, kubeConfigPath?: string) {
+    this.k8s = k8s;
     this.kubeConfig = new k8s.KubeConfig();
     const effectivePath = kubeConfigPath || this.tryDiscoverKubeConfig();
     if (effectivePath && fs.existsSync(effectivePath)) {
@@ -258,16 +290,16 @@ export default class KubernetesClient {
     return undefined;
   }
 
-  get kc(): k8s.KubeConfig {
+  get kc(): KubeConfig {
     return this.kubeConfig;
   }
-  get coreV1Api(): k8s.CoreV1Api {
+  get coreV1Api(): CoreV1Api {
     return this.k8sApi;
   }
-  get customObjectsApi(): k8s.CustomObjectsApi {
+  get customObjectsApi(): CustomObjectsApi {
     return this.coApi;
   }
-  get appsV1Api(): k8s.AppsV1Api {
+  get appsV1Api(): AppsV1Api {
     return this.appsApi;
   }
 
@@ -374,7 +406,7 @@ export default class KubernetesClient {
       name,
       namespace,
       body: { data: mergedData },
-      contentType: k8s.PatchStrategy.MergePatch,
+      contentType: this.k8s.PatchStrategy.MergePatch,
     } as any);
   }
 
@@ -467,7 +499,7 @@ export default class KubernetesClient {
     }
   }
 
-  async getPods(namespace: string): Promise<k8s.V1Pod[]> {
+  async getPods(namespace: string): Promise<V1Pod[]> {
     const response = await this.k8sApi.listNamespacedPod({ namespace });
     return response.items || [];
   }
