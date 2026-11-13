@@ -233,6 +233,10 @@ export type ContainerSpec = {
   [key: string]: any;
 };
 
+export interface EphemeralContainer extends ContainerSpec {
+  targetContainerName?: string;
+}
+
 export type Volume = {
   name: string;
   [key: string]: any;
@@ -241,6 +245,7 @@ export type Volume = {
 type PodSpec = {
   volumes?: Volume[];
   initContainers?: ContainerSpec[];
+  ephemeralContainers?: EphemeralContainer[];
   containers: ContainerSpec[];
   restartPolicy?: 'Always' | 'OnFailure' | 'Never';
   terminationGracePeriodSeconds?: number;
@@ -292,6 +297,7 @@ export type PodStatus = {
   startTime?: string;
   initContainerStatuses?: ContainerStatus[];
   containerStatuses?: ContainerStatus[];
+  ephemeralContainerStatuses?: ContainerStatus[];
   [key: string]: any;
 };
 

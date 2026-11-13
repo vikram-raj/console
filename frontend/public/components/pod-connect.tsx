@@ -88,7 +88,11 @@ export const PodConnect: FC<PodConnectProps> = ({
       obj?.spec.containers[0].name,
   );
 
-  const containers = useMemo(() => _.keyBy(_.get(obj, 'spec.containers', []), 'name'), [obj]);
+  const containers = useMemo(
+    () =>
+      _.keyBy([...(obj.spec.containers ?? []), ...(obj.spec.ephemeralContainers ?? [])], 'name'),
+    [obj],
+  );
 
   const podName = useMemo(() => obj.metadata?.name || '', [obj.metadata?.name]);
   const namespace = useMemo(() => obj.metadata?.namespace || 'default', [obj?.metadata?.namespace]);
@@ -138,7 +142,7 @@ export const PodConnect: FC<PodConnectProps> = ({
             terminalRef.current?.reset();
             terminalRef.current?.onConnectionClosed(
               // eslint-disable-next-line no-restricted-globals
-              `This container doesn't have a /bin/sh shell. Try specifying your command in a terminal with:\r\n\r\n ${usedClient} -n ${namespace} exec ${name} -ti <command>`,
+              `This container doesn't have a /bin/sh shell. Start a debug container from the Pod Actions menu.\r\n\r\n ${usedClient} -n ${namespace} exec ${name} -ti <command>`,
             );
             wsRef.current.destroy();
             previous = '';

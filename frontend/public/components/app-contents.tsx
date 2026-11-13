@@ -709,6 +709,18 @@ const AppContents: FC = () => {
       <Route path="/k8s/cluster/:plural/~new" element={<CreateResource />} />
       <Route path="/k8s/cluster/:plural/:name/*" element={<ResourceDetailsPage />} />
       <Route
+        path="/k8s/ns/:ns/pods/:podName/ephemeralcontainers/:name/debug/*"
+        element={
+          <AsyncComponent
+            loader={() =>
+              import(
+                './ephemeral-debug-terminal' /* webpackChunkName: "ephemeral-debug-terminal" */
+              ).then((m) => m.EphemeralDebugTerminalPage)
+            }
+          />
+        }
+      />
+      <Route
         path="/k8s/ns/:ns/pods/:podName/containers/:name/debug/*"
         element={
           <AsyncComponent

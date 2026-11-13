@@ -198,6 +198,7 @@
   "DaemonSets": "DaemonSets",
   "Dark": "Dark",
   "Datastore": "Datastore",
+  "Debug": "Debug",
   "Debug pod not found or was deleted.": "Debug pod not found or was deleted.",
   "Default": "Default",
   "Default filesystem type to request": "Default filesystem type to request",
